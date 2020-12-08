@@ -14,7 +14,9 @@ public class Shell {
         Scanner stdin = new Scanner(System.in);
         while (true) {
             System.out.print(prefix);
-            run("<stdin>", stdin.nextLine());
+            String nextLine = stdin.nextLine();
+            if (nextLine.equals("exit()")) break;
+            run("<stdin>", nextLine);
         }
     }
 
