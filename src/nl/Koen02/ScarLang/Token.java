@@ -1,22 +1,21 @@
 package nl.Koen02.ScarLang;
 
 public class Token {
-    String type, value;
-    Position posStart, posEnd;
+    public String type, value;
+    public Position posStart, posEnd;
 
-    public Token(String type, String value, Position posStart, Position posEnd) {
+    public Token(String type, String value) {
         this.type = type;
         this.value = value;
+    }
+    public Token setPosStart(Position posStart) {
+        this.posStart = posStart;
+        return this;
+    }
 
-        if (posStart != null) {
-            this.posStart = posStart.getCopy();
-            this.posEnd = posStart.getCopy();
-            this.posEnd.advance();
-        }
-
-        if (posEnd != null) {
-            this.posEnd = posEnd;
-        }
+    public Token setPosEnd(Position posEnd) {
+        this.posEnd = posEnd;
+        return this;
     }
 
     public String get() {
