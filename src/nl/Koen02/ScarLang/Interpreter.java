@@ -9,24 +9,24 @@ import nl.Koen02.ScarLang.Node.UnaryOpNode;
 import static nl.Koen02.ScarLang.TokenTypes.*;
 
 public class Interpreter {
-    public Number visit(Node node) throws RunTimeError {
+    public Number visit(Node node, Context context) throws RunTimeError {
         if (node instanceof NumberNode) {
-            return visitNumberNode((NumberNode) node);
+            return visitNumberNode((NumberNode) node, context);
         } else if (node instanceof BinOpNode) {
-            return visitBinOpNode((BinOpNode) node);
+            return visitBinOpNode((BinOpNode) node, context);
         } else if (node instanceof UnaryOpNode) {
-            return visitUnaryOpNode((UnaryOpNode) node);
+            return visitUnaryOpNode((UnaryOpNode) node, context);
         }
         return null;
     }
 
-    public Number visitNumberNode(NumberNode node) {
-        return new Number(Integer.parseInt(node.tok.value)).setPos(node.posStart, node.posEnd);
+    public Number visitNumberNode(NumberNode node, Context context) {
+        return new Number(Double.parseDouble(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
-    public Number visitBinOpNode(BinOpNode node) throws RunTimeError {
-        Number left = visit(node.leftNode);
-        Number right = visit(node.rightNode);
+    public Number visitBinOpNode(BinOpNode node, Context context) throws RunTimeError {
+        Number left = visit(node.leftNode, context);
+        Number right = visit(node.rightNode, context);
 
         Number number = null;
         switch (node.opTok.type) {
@@ -40,10 +40,10 @@ public class Interpreter {
         return number.setPos(node.posStart, node.posEnd);
     }
 
-    public Number visitUnaryOpNode(UnaryOpNode node) throws RunTimeError {
-        Number number = visit(node.node);
+    public Number visitUnaryOpNode(UnaryOpNode node, Context context) throws RunTimeError {
+        Number number = visit(node.node, context);
         if (node.opTok.type.equals(TT_MIN)) {
-            number = number.multipliedBy(new Number(-1));
+            number = number.multipliedBy(new Number((double) -1));
         }
         return number.setPos(node.posStart, node.posEnd);
     }

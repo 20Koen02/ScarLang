@@ -30,11 +30,12 @@ public class Shell {
             Parser parser = new Parser(tokens);
             Node ast = parser.parse();
 
-
             // Run Program
             Interpreter interpreter = new Interpreter();
-            Number result = interpreter.visit(ast);
+            Context context = new Context("<program>");
+            Number result = interpreter.visit(ast, context);
 
+            // Log Output
             System.out.println(result.get());
         } catch (Error e) {
             System.out.println(e.getError());
