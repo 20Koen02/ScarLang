@@ -1,0 +1,9 @@
+Expression  = Expression (PLUS || MINUS) Term
+            = Term
+
+Term    = Term (MUL || DIV) Factor
+        = Factor
+
+Factor  = number
+        = (PLUS || MINUS) number
+        = LPAR Expression RPAR

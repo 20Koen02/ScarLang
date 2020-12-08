@@ -1,5 +1,9 @@
 package nl.Koen02.ScarLang;
 
+import nl.Koen02.ScarLang.Error.Error;
+import nl.Koen02.ScarLang.Error.IllegalCharError;
+import nl.Koen02.ScarLang.Node.Node;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -7,22 +11,24 @@ public class Shell {
     static String prefix = "\n-> \t";
 
     public static void main(String[] args) {
-        //run("1.2 / (2 + 1)");
-
-        Scanner myObj = new Scanner(System.in);
+        Scanner stdin = new Scanner(System.in);
         while (true) {
             System.out.print(prefix);
-            run("<stdin>", myObj.nextLine());
+            run("<stdin>", stdin.nextLine());
         }
     }
 
     private static void run(String fn, String code) {
-        Lexer lexer = new Lexer(fn, code);
-        ArrayList<String> tokens = lexer.makeTokens();
-        if (tokens.get(0).equals(Lexer.ERR)) {
-            System.out.println("<- \t" + tokens.get(1));
-        } else {
-            System.out.println("<- \t" + tokens);
+        try {
+            Lexer lexer = new Lexer(fn, code);
+            ArrayList<Token> tokens = lexer.makeTokens();
+
+            Parser parser = new Parser(tokens);
+            Node ast = parser.parse();
+
+            System.out.println(ast.get());
+        } catch (Error e) {
+            System.out.println(e.getError());
         }
     }
 }

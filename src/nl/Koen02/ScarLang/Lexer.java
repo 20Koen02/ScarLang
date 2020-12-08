@@ -4,19 +4,9 @@ import nl.Koen02.ScarLang.Error.IllegalCharError;
 
 import java.util.ArrayList;
 
-public class Lexer {
-    static String DIG = "0123456789";
-    static String ERR = "ERR";
-    static String OP = "OP";
-    static String INT = "INT";
-    static String FLOAT = "FLOAT";
-    static String PLUS = "PLUS";
-    static String MIN = "MIN";
-    static String MUL = "MUL";
-    static String DIV = "DIV";
-    static String LPAR = "LPAR";
-    static String RPAR = "RPAR";
+import static nl.Koen02.ScarLang.TokenTypes.*;
 
+public class Lexer {
     String code, curChar;
     Position pos;
 
@@ -29,60 +19,59 @@ public class Lexer {
 
     private void advance() {
         pos.advance(curChar);
-        if(pos.idx < code.length()) {
+        if (pos.idx < code.length()) {
             curChar = Character.toString(code.charAt(pos.idx));
         } else {
             curChar = null;
         }
     }
 
-    public ArrayList<String> makeTokens() {
-        ArrayList<String> tokens = new ArrayList<>();
+    public ArrayList<Token> makeTokens() throws IllegalCharError {
+        ArrayList<Token> tokens = new ArrayList<>();
         while (curChar != null) {
 
             if (curChar.equals("\t") || curChar.equals(" ")) {
                 advance();
-            } else if (DIG.contains(curChar)) {
-                tokens.add(makeNumber().getToken());
+            } else if (TT_DIG.contains(curChar)) {
+                tokens.add(makeNumber());
             } else if (curChar.equals("+")) {
-                tokens.add(new Token(OP, PLUS).getToken());
+                tokens.add(new TokenBuilder(TT_PLUS, null).setPosStart(pos).build());
                 advance();
             } else if (curChar.equals("-")) {
-                tokens.add(new Token(OP, MIN).getToken());
+                tokens.add(new TokenBuilder(TT_MIN, null).setPosStart(pos).build());
                 advance();
             } else if (curChar.equals("*")) {
-                tokens.add(new Token(OP, MUL).getToken());
+                tokens.add(new TokenBuilder(TT_MUL, null).setPosStart(pos).build());
                 advance();
             } else if (curChar.equals("/")) {
-                tokens.add(new Token(OP, DIV).getToken());
+                tokens.add(new TokenBuilder(TT_DIV, null).setPosStart(pos).build());
                 advance();
             } else if (curChar.equals("(")) {
-                tokens.add(new Token(OP, LPAR).getToken());
+                tokens.add(new TokenBuilder(TT_LPAR, null).setPosStart(pos).build());
                 advance();
             } else if (curChar.equals(")")) {
-                tokens.add(new Token(OP, RPAR).getToken());
+                tokens.add(new TokenBuilder(TT_RPAR, null).setPosStart(pos).build());
                 advance();
             } else {
                 Position posStart = pos.getCopy();
                 String ch = curChar;
 
-                tokens.clear();
-                tokens.add(ERR);
+                advance();
 
-                IllegalCharError err = new IllegalCharError(posStart, pos, ch);
-                tokens.add(err.getError());
-                return tokens;
+                throw new IllegalCharError(posStart, pos, "'" + ch +  "'");
             }
         }
 
+        tokens.add(new TokenBuilder(TT_EOF, null).setPosStart(pos).build());
         return tokens;
     }
 
     private Token makeNumber() {
         StringBuilder num = new StringBuilder();
         int dots = 0;
+        Position posStart = pos.getCopy();
 
-        while (curChar != null && (DIG + ".").contains(curChar)) {
+        while (curChar != null && (TT_DIG + ".").contains(curChar)) {
             if (curChar.equals(".")) {
                 dots++;
                 num.append(".");
@@ -91,11 +80,6 @@ public class Lexer {
             }
             advance();
         }
-        if (dots == 0) {
-            return new Token(INT, num.toString());
-        } else {
-            return new Token(FLOAT, num.toString());
-        }
-
+        return new TokenBuilder(dots == 0 ? TT_INT : TT_FLOAT, num.toString()).setPosStart(posStart).setPosEnd(pos).build();
     }
 }
