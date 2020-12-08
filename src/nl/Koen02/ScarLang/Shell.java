@@ -30,7 +30,6 @@ public class Shell {
             Parser parser = new Parser(tokens);
             Node ast = parser.parse();
 
-            System.out.println(ast.get());
 
             // Run Program
             Interpreter interpreter = new Interpreter();

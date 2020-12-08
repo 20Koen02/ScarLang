@@ -14,7 +14,6 @@ public class Number {
     public Number setPos(Position posStart, Position posEnd) {
         this.posStart = posStart;
         this.posEnd = posEnd;
-        System.out.println(posStart.idx + "\t" + posEnd.idx);
         return this;
     }
 

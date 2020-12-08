@@ -80,6 +80,6 @@ public class Lexer {
             }
             advance();
         }
-        return new Token(dots == 0 ? TT_INT : TT_FLOAT, num.toString()).setPosStart(posStart).setPosEnd(pos);
+        return new Token(dots == 0 ? TT_INT : TT_FLOAT, num.toString()).setPosStart(posStart);
     }
 }

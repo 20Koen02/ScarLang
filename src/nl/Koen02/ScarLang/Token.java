@@ -9,7 +9,9 @@ public class Token {
         this.value = value;
     }
     public Token setPosStart(Position posStart) {
-        this.posStart = posStart;
+        this.posStart = posStart.getCopy();
+        this.posEnd = posStart.getCopy();
+        this.posEnd.advance();
         return this;
     }
 
