@@ -24,7 +24,7 @@ public class ParseResult {
     }
 
     public ParseResult failure(Error error) {
-        if (error == null || advanceCount == 0) this.error = error;
+        if (this.error == null || advanceCount == 0) this.error = error;
         return this;
     }
 }

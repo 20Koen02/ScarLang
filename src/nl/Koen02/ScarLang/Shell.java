@@ -13,7 +13,8 @@ public class Shell {
             System.out.print(prefix);
             String nextLine = stdin.nextLine();
             if (nextLine.equals("exit()")) break;
-            System.out.println(run("<stdin>", nextLine));
+            String result = run("<stdin>", nextLine);
+            if (result != null) System.out.println(result);
         }
     }
 }

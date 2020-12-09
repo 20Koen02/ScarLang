@@ -3,6 +3,8 @@ package nl.Koen02.ScarLang;
 import nl.Koen02.ScarLang.Error.RunTimeError;
 import nl.Koen02.ScarLang.Node.*;
 
+import java.util.ArrayList;
+
 import static nl.Koen02.ScarLang.TokenTypes.*;
 
 public class Interpreter {
@@ -17,6 +19,8 @@ public class Interpreter {
             return visitVarAccessNode((VarAccessNode) node, context);
         } else if (node instanceof VarAssignNode) {
             return visitVarAssignNode((VarAssignNode) node, context);
+        } else if (node instanceof IfNode) {
+            return visitIfNode((IfNode) node, context);
         }
         return null;
     }
@@ -88,5 +92,16 @@ public class Interpreter {
             number = number.notOperated();
         }
         return number.setPos(node.posStart, node.posEnd);
+    }
+
+    private Number visitIfNode(IfNode node, Context context) throws RunTimeError {
+        for (ArrayList<Node> condExpr : node.cases) {
+            Node condition = condExpr.get(0);
+            Node expression = condExpr.get(1);
+            Number conditionValue = visit(condition, context);
+            if (conditionValue.is_true()) return visit(expression, context);
+        }
+        if (node.elseCase != null) return visit(node.elseCase, context);
+        return null;
     }
 }

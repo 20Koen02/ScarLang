@@ -32,7 +32,11 @@ public class TokenTypes {
             "var",
             "and",
             "or",
-            "not"
+            "not",
+            "if",
+            "then",
+            "elif",
+            "else"
     };
     public static final List<String> KEYWORDS = Arrays.asList(KEYWORDS_ARRAY);
 }

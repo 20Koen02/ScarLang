@@ -1,5 +1,6 @@
 package nl.Koen02.ScarLang;
 
+import nl.Koen02.ScarLang.Node.IfNode;
 import nl.Koen02.ScarLang.Error.InvalidSyntaxError;
 import nl.Koen02.ScarLang.Node.*;
 
@@ -39,6 +40,43 @@ public class Parser {
         return res;
     }
 
+    public ParseResult ifExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        ArrayList<ArrayList<Node>> cases = new ArrayList<>();
+        Node elseCase = null;
+
+        if (!curTok.matches(TT_KEYWORD, "if")) return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'if'"));
+
+        do {
+            res.regAdvancement();
+            advance();
+
+            Node condition = res.register(expr());
+            if (res.error != null) return res;
+
+            if (!curTok.matches(TT_KEYWORD, "then")) return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'then'"));
+            res.regAdvancement();
+            advance();
+
+            Node expr = res.register(expr());
+            if (res.error != null) return res;
+
+            ArrayList<Node> conditionExpressionList = new ArrayList<>();
+            conditionExpressionList.add(condition);
+            conditionExpressionList.add(expr);
+            cases.add(conditionExpressionList);
+        } while (curTok.matches(TT_KEYWORD, "elif"));
+
+        if (curTok.matches(TT_KEYWORD, "else")) {
+            res.regAdvancement();
+            advance();
+            elseCase = res.register(expr());
+            if (res.error != null) return res;
+        }
+
+        return res.success(new IfNode(cases, elseCase));
+    }
+
     public ParseResult atom() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
         Token tok = curTok;
@@ -63,7 +101,12 @@ public class Parser {
             } else {
                 return res.failure(new InvalidSyntaxError(tok.posStart, tok.posEnd, "Expected ')'"));
             }
+        } else if (tok.matches(TT_KEYWORD, "if")) {
+            Node ifExpr = res.register(ifExpr());
+            if (res.error != null) return res;
+            return res.success(ifExpr);
         }
+
         return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-' or '('"));
     }
 
@@ -110,7 +153,7 @@ public class Parser {
         String[] binOps = {TT_EE, TT_NE, TT_LT, TT_GT, TT_LTE, TT_GTE};
         Node node = res.register(binOp(this.getClass().getMethod("arithExpr"), null, Arrays.asList(binOps)));
         if (res.error != null) {
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(' or 'NOT'"));
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(' or 'not'"));
         }
         return res.success(node);
     }
@@ -138,7 +181,7 @@ public class Parser {
         Node node = res.register(binOpExpr());
 
         if (res.error != null) {
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'VAR', int, float, identifier, '+', '-' or '('"));
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'var', int, float, identifier, '+', '-' or '('"));
         }
 
         return res.success(node);

@@ -87,6 +87,10 @@ public class Number {
         return copy;
     }
 
+    public boolean is_true() {
+        return value != 0;
+    }
+
     public String get() {
         return value == Math.floor(value) ? String.valueOf(Math.round(value)) : value.toString();
     }

@@ -26,4 +26,10 @@ public class SymbolTable {
     public void remove(String name) {
         symbols.remove(name);
     }
+
+    public void addDefaultSymbols() {
+        set("null", new Number((double) 0));
+        set("true", new Number((double) 1));
+        set("false", new Number((double) 0));
+    }
 }
