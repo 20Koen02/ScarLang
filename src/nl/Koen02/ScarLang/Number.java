@@ -44,6 +44,42 @@ public class Number {
         return new Number(Math.pow(value, other.value)).setContext(context).setPos(posStart, posEnd);
     }
 
+    public Number getComparisonEe(Number other) {
+        return new Number(value.equals(other.value) ? 1d : 0d).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number getComparisonNe(Number other) {
+        return new Number(value.equals(other.value) ? 0d : 1d).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number getComparisonLt(Number other) {
+        return new Number(value < other.value ? 1d : 0d).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number getComparisonGt(Number other) {
+        return new Number(value > other.value ? 1d : 0d).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number getComparisonLte(Number other) {
+        return new Number(value <= other.value ? 1d : 0d).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number getComparisonGte(Number other) {
+        return new Number(value >= other.value ? 1d : 0d).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number andOperated(Number other) {
+        return new Number((double) (value.intValue() & other.value.intValue())).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number orOperated(Number other) {
+        return new Number((double) (value.intValue() | other.value.intValue())).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number notOperated() {
+        return new Number(value == 0 ? 1d : 0d).setContext(context).setPos(posStart, posEnd);
+    }
+
     public Number getCopy() {
         Number copy = new Number(value);
         copy.setPos(posStart, posEnd);
@@ -54,4 +90,5 @@ public class Number {
     public String get() {
         return value == Math.floor(value) ? String.valueOf(Math.round(value)) : value.toString();
     }
+
 }

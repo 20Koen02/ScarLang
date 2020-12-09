@@ -1,8 +1,10 @@
 package nl.Koen02.ScarLang;
 
+import nl.Koen02.ScarLang.Error.*;
 import nl.Koen02.ScarLang.Error.Error;
 import nl.Koen02.ScarLang.Node.Node;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 public class Run {
@@ -30,6 +32,8 @@ public class Run {
 
             // Log Output
             return result.get();
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
         } catch (Error e) {
             System.out.println(e.getError());
         }

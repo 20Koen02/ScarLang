@@ -48,12 +48,32 @@ public class Interpreter {
         Number right = visit(node.rightNode, context);
 
         Number number = null;
-        switch (node.opTok.type) {
-            case TT_PLUS -> number = left.addedTo(right);
-            case TT_MIN -> number = left.subtractedBy(right);
-            case TT_MUL -> number = left.multipliedBy(right);
-            case TT_DIV -> number = left.dividedBy(right);
-            case TT_POW -> number = left.poweredBy(right);
+        if (TT_PLUS.equals(node.opTok.type)) {
+            number = left.addedTo(right);
+        } else if (TT_MIN.equals(node.opTok.type)) {
+            number = left.subtractedBy(right);
+        } else if (TT_MUL.equals(node.opTok.type)) {
+            number = left.multipliedBy(right);
+        } else if (TT_DIV.equals(node.opTok.type)) {
+            number = left.dividedBy(right);
+        } else if (TT_POW.equals(node.opTok.type)) {
+            number = left.poweredBy(right);
+        } else if (TT_EE.equals(node.opTok.type)) {
+            number = left.getComparisonEe(right);
+        } else if (TT_NE.equals(node.opTok.type)) {
+            number = left.getComparisonNe(right);
+        } else if (TT_LT.equals(node.opTok.type)) {
+            number = left.getComparisonLt(right);
+        } else if (TT_GT.equals(node.opTok.type)) {
+            number = left.getComparisonGt(right);
+        } else if (TT_LTE.equals(node.opTok.type)) {
+            number = left.getComparisonLte(right);
+        } else if (TT_GTE.equals(node.opTok.type)) {
+            number = left.getComparisonGte(right);
+        } else if (node.opTok.matches(TT_KEYWORD, "and")) {
+            number = left.andOperated(right);
+        } else if (node.opTok.matches(TT_KEYWORD, "or")) {
+            number = left.orOperated(right);
         }
 
         if (number == null) return null;
@@ -64,6 +84,8 @@ public class Interpreter {
         Number number = visit(node.node, context);
         if (node.opTok.type.equals(TT_MIN)) {
             number = number.multipliedBy(new Number((double) -1));
+        } else if (node.opTok.matches(TT_KEYWORD, "not")) {
+            number = number.notOperated();
         }
         return number.setPos(node.posStart, node.posEnd);
     }

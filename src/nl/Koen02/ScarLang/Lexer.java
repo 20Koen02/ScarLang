@@ -1,5 +1,6 @@
 package nl.Koen02.ScarLang;
 
+import nl.Koen02.ScarLang.Error.ExpectedCharError;
 import nl.Koen02.ScarLang.Error.IllegalCharError;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class Lexer {
         }
     }
 
-    public ArrayList<Token> makeTokens() throws IllegalCharError {
+    public ArrayList<Token> makeTokens() throws IllegalCharError, ExpectedCharError {
         ArrayList<Token> tokens = new ArrayList<>();
         while (curChar != null) {
 
@@ -52,15 +53,20 @@ public class Lexer {
             } else if (curChar.equals("^")) {
                 tokens.add(new Token(TT_POW, null).setPosStart(pos));
                 advance();
-            } else if (curChar.equals("=")) {
-                tokens.add(new Token(TT_EQ, null).setPosStart(pos));
-                advance();
             } else if (curChar.equals("(")) {
                 tokens.add(new Token(TT_LPAR, null).setPosStart(pos));
                 advance();
             } else if (curChar.equals(")")) {
                 tokens.add(new Token(TT_RPAR, null).setPosStart(pos));
                 advance();
+            } else if (curChar.equals("!")) {
+                tokens.add(makeNotEquals());
+            } else if (curChar.equals("=")) {
+                tokens.add(makeOpEq(TT_EQ, TT_EE));
+            } else if (curChar.equals("<")) {
+                tokens.add(makeOpEq(TT_LT, TT_LTE));
+            } else if (curChar.equals(">")) {
+                tokens.add(makeOpEq(TT_GT, TT_GTE));
             } else {
                 Position posStart = pos.getCopy();
                 String ch = curChar;
@@ -73,6 +79,32 @@ public class Lexer {
 
         tokens.add(new Token(TT_EOF, null).setPosStart(pos));
         return tokens;
+    }
+
+    private Token makeNotEquals() throws ExpectedCharError {
+        Position posStart = pos.getCopy();
+        advance();
+
+        if (curChar.equals("=")) {
+            advance();
+            return new Token(TT_NE, null).setPosStart(posStart).setPosEnd(pos);
+        }
+
+        advance();
+        throw new ExpectedCharError(posStart, pos, "'=' (after '!')");
+    }
+
+    private Token makeOpEq(String notEq, String isEq) {
+        String tokenType = notEq;
+        Position posStart = pos.getCopy();
+        advance();
+
+        if (curChar.equals("=")) {
+            advance();
+            tokenType = isEq;
+        }
+
+        return new Token(tokenType, null).setPosStart(posStart).setPosEnd(pos);
     }
 
     private Token makeIdentifier() {

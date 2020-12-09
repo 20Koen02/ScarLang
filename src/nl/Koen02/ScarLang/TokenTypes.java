@@ -19,9 +19,20 @@ public class TokenTypes {
     public static final String TT_EQ = "EQ";
     public static final String TT_LPAR = "LPAR";
     public static final String TT_RPAR = "RPAR";
+    public static final String TT_EE = "EE";
+    public static final String TT_NE = "NE";
+    public static final String TT_LT = "LT";
+    public static final String TT_GT = "GT";
+    public static final String TT_LTE = "LTE";
+    public static final String TT_GTE = "GTE";
+
     public static final String TT_EOF = "EOF";
 
-    private static final String[] KEYWORDS_ARRAY = {"var"};
+    private static final String[] KEYWORDS_ARRAY = {
+            "var",
+            "and",
+            "or",
+            "not"
+    };
     public static final List<String> KEYWORDS = Arrays.asList(KEYWORDS_ARRAY);
-
 }
