@@ -39,7 +39,7 @@ public class Parser {
         return res;
     }
 
-    public ParseResult atom() throws InvalidSyntaxError, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public ParseResult atom() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
         Token tok = curTok;
 
@@ -67,12 +67,12 @@ public class Parser {
         return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-' or '('"));
     }
 
-    public ParseResult power() throws InvalidSyntaxError, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public ParseResult power() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         String[] binOps = {TT_POW};
         return binOp(this.getClass().getMethod("atom"), null, Arrays.asList(binOps));
     }
 
-    public ParseResult factor() throws InvalidSyntaxError, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public ParseResult factor() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
         Token tok = curTok;
 
@@ -86,17 +86,17 @@ public class Parser {
         return power();
     }
 
-    public ParseResult term() throws InvalidSyntaxError, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public ParseResult term() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         String[] binOps = {TT_MUL, TT_DIV};
         return binOp(this.getClass().getMethod("factor"), null, Arrays.asList(binOps));
     }
 
-    public ParseResult arithExpr() throws InvalidSyntaxError, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public ParseResult arithExpr() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         String[] binOps = {TT_PLUS, TT_MIN};
         return binOp(this.getClass().getMethod("term"), null, Arrays.asList(binOps));
     }
 
-    public ParseResult compExpr() throws NoSuchMethodException, IllegalAccessException, InvalidSyntaxError, InvocationTargetException {
+    public ParseResult compExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
         if (curTok.matches(TT_KEYWORD, "not")) {
             Token opTok = curTok;
@@ -115,7 +115,7 @@ public class Parser {
         return res.success(node);
     }
 
-    public ParseResult expr() throws InvalidSyntaxError, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public ParseResult expr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
 
         if (curTok.matches(TT_KEYWORD, "var")) {
@@ -144,7 +144,7 @@ public class Parser {
         return res.success(node);
     }
 
-    public ParseResult binOpExpr() throws InvalidSyntaxError, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public ParseResult binOpExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
         Node left = res.register(compExpr());
         if (res.error != null) return res;
