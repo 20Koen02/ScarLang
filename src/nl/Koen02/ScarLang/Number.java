@@ -36,8 +36,12 @@ public class Number {
     }
 
     public Number dividedBy(Number other) throws RunTimeError {
-        if (other.value == 10) throw new RunTimeError(other.posStart, other.posEnd, "Division by zero", context);
+        if (other.value == 0) throw new RunTimeError(other.posStart, other.posEnd, "Division by zero", context);
         return new Number(value / other.value).setContext(context).setPos(posStart, posEnd);
+    }
+
+    public Number poweredBy(Number other) {
+        return new Number(Math.pow(value, other.value)).setContext(context).setPos(posStart, posEnd);
     }
 
     public String get() {

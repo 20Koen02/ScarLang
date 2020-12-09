@@ -1,9 +1,11 @@
-Expression  = Expression (PLUS || MINUS) Term
-            = Term
+Expression  = Term ((PLUS || MINUS) Term)
 
-Term    = Term (MUL || DIV) Factor
-        = Factor
+Term        = Factor ((MUL || DIV) Factor)
 
-Factor  = number
-        = (PLUS || MINUS) number
-        = LPAR Expression RPAR
+Factor      = (PLUS || MINUS) factor
+            = Power
+
+Power       = Atom (POW Factor)
+
+Atom        = (INT || FLOAT)
+            = LPAR Expression RPAR

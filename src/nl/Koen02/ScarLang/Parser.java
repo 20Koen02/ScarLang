@@ -38,31 +38,45 @@ public class Parser {
         return res;
     }
 
+    public Node atom() throws InvalidSyntaxError {
+        Token tok = curTok;
+
+        if (TT_INT.equals(tok.type) || TT_FLOAT.equals(tok.type)) {
+            advance();
+            return new NumberNode(tok);
+        } else if (TT_LPAR.equals(tok.type)) {
+            advance();
+            Node expr = expr();
+            if (curTok.type.equals(TT_RPAR)) {
+                advance();
+                return expr;
+            } else {
+                throw new InvalidSyntaxError(tok.posStart, tok.posEnd, "Expected ')'");
+            }
+        }
+        throw new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, '+', '-' or '('");
+    }
+
+    public Node power() throws InvalidSyntaxError {
+        Node left = atom();
+        while (curTok.type.equals(TT_POW)) {
+            Token opTok = curTok;
+            advance();
+            Node right = factor();
+            left = new BinOpNode(left, opTok, right);
+        }
+        return left;
+    }
+
     public Node factor() throws InvalidSyntaxError {
         Token tok = curTok;
 
-        switch (tok.type) {
-            case TT_PLUS, TT_MIN -> {
-                advance();
-                Node factor = factor();
-                return new UnaryOpNode(tok, factor);
-            }
-            case TT_INT, TT_FLOAT -> {
-                advance();
-                return new NumberNode(tok);
-            }
-            case TT_LPAR -> {
-                advance();
-                Node expr = expr();
-                if (curTok.type.equals(TT_RPAR)) {
-                    advance();
-                    return expr;
-                } else {
-                    throw new InvalidSyntaxError(tok.posStart, tok.posEnd, "Expected ')'");
-                }
-            }
+        if (TT_PLUS.equals(tok.type) || TT_MIN.equals(tok.type)) {
+            advance();
+            Node factor = factor();
+            return new UnaryOpNode(tok, factor);
         }
-        throw new InvalidSyntaxError(tok.posStart, tok.posEnd, "Expected int or float");
+        return power();
     }
 
     public Node term() throws InvalidSyntaxError {

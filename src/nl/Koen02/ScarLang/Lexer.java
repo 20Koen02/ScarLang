@@ -46,6 +46,9 @@ public class Lexer {
             } else if (curChar.equals("/")) {
                 tokens.add(new Token(TT_DIV, null).setPosStart(pos));
                 advance();
+            } else if (curChar.equals("^")) {
+                tokens.add(new Token(TT_POW, null).setPosStart(pos));
+                advance();
             } else if (curChar.equals("(")) {
                 tokens.add(new Token(TT_LPAR, null).setPosStart(pos));
                 advance();

@@ -34,6 +34,7 @@ public class Interpreter {
             case TT_MIN -> number = left.subtractedBy(right);
             case TT_MUL -> number = left.multipliedBy(right);
             case TT_DIV -> number = left.dividedBy(right);
+            case TT_POW -> number = left.poweredBy(right);
         }
 
         if (number == null) return null;

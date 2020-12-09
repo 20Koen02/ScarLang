@@ -8,6 +8,7 @@ public class TokenTypes {
     public static final String TT_MIN = "MIN";
     public static final String TT_MUL = "MUL";
     public static final String TT_DIV = "DIV";
+    public static final String TT_POW = "POW";
     public static final String TT_LPAR = "LPAR";
     public static final String TT_RPAR = "RPAR";
     public static final String TT_EOF = "EOF";
