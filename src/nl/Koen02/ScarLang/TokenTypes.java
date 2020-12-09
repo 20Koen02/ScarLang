@@ -9,6 +9,7 @@ public class TokenTypes {
     public static final String TT_ALPHANUMERIC = TT_DIGITS + TT_LETTERS;
     public static final String TT_INT = "INT";
     public static final String TT_FLOAT = "FLOAT";
+    public static final String TT_STRING = "STRING";
     public static final String TT_IDENTIFIER = "IDENTIFIER";
     public static final String TT_KEYWORD = "KEYWORD";
     public static final String TT_PLUS = "PLUS";
@@ -25,7 +26,8 @@ public class TokenTypes {
     public static final String TT_GT = "GT";
     public static final String TT_LTE = "LTE";
     public static final String TT_GTE = "GTE";
-
+    public static final String TT_COMMA = "COMMA";
+    public static final String TT_ARROW = "ARROW";
     public static final String TT_EOF = "EOF";
 
     private static final String[] KEYWORDS_ARRAY = {
@@ -40,7 +42,8 @@ public class TokenTypes {
             "for",
             "to",
             "step",
-            "while"
+            "while",
+            "func"
     };
     public static final List<String> KEYWORDS = Arrays.asList(KEYWORDS_ARRAY);
 }

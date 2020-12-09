@@ -5,6 +5,7 @@ import nl.Koen02.ScarLang.Error.IllegalCharError;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static nl.Koen02.ScarLang.TokenTypes.*;
 
@@ -38,12 +39,13 @@ public class Lexer {
                 tokens.add(makeNumber());
             } else if (TT_LETTERS.contains(curChar)) {
                 tokens.add(makeIdentifier());
+            } else if (curChar.equals("\"")) {
+                tokens.add(makeString());
             } else if (curChar.equals("+")) {
                 tokens.add(new Token(TT_PLUS, null).setPosStart(pos));
                 advance();
             } else if (curChar.equals("-")) {
-                tokens.add(new Token(TT_MIN, null).setPosStart(pos));
-                advance();
+                tokens.add(makeOneOrOther(">", TT_MIN, TT_ARROW));
             } else if (curChar.equals("*")) {
                 tokens.add(new Token(TT_MUL, null).setPosStart(pos));
                 advance();
@@ -62,11 +64,14 @@ public class Lexer {
             } else if (curChar.equals("!")) {
                 tokens.add(makeNotEquals());
             } else if (curChar.equals("=")) {
-                tokens.add(makeOpEq(TT_EQ, TT_EE));
+                tokens.add(makeOneOrOther("=", TT_EQ, TT_EE));
             } else if (curChar.equals("<")) {
-                tokens.add(makeOpEq(TT_LT, TT_LTE));
+                tokens.add(makeOneOrOther("=", TT_LT, TT_LTE));
             } else if (curChar.equals(">")) {
-                tokens.add(makeOpEq(TT_GT, TT_GTE));
+                tokens.add(makeOneOrOther("=", TT_GT, TT_GTE));
+            } else if (curChar.equals(",")) {
+                tokens.add(new Token(TT_COMMA, null).setPosStart(pos));
+                advance();
             } else {
                 Position posStart = pos.getCopy();
                 String ch = curChar;
@@ -94,12 +99,12 @@ public class Lexer {
         throw new ExpectedCharError(posStart, pos, "'=' (after '!')");
     }
 
-    private Token makeOpEq(String notEq, String isEq) {
+    private Token makeOneOrOther(String ch, String notEq, String isEq) {
         String tokenType = notEq;
         Position posStart = pos.getCopy();
         advance();
 
-        if (curChar.equals("=")) {
+        if (curChar.equals(ch)) {
             advance();
             tokenType = isEq;
         }
@@ -136,5 +141,29 @@ public class Lexer {
             advance();
         }
         return new Token(dots == 0 ? TT_INT : TT_FLOAT, num.toString()).setPosStart(posStart);
+    }
+
+    private Token makeString() {
+        StringBuilder string = new StringBuilder();
+        Position posStart = pos.getCopy();
+        advance();
+
+        HashMap<String, String> escChars = new HashMap<>();
+        escChars.put("n", "\n");
+        escChars.put("t", "\t");
+
+        while (curChar != null && !curChar.equals("\"")) {
+            if (curChar.equals("\\")) {
+                advance();
+                String getEsc = escChars.get(curChar);
+                string.append(getEsc != null ? getEsc : curChar);
+            } else {
+                string.append(curChar);
+            }
+
+            advance();
+        }
+        advance();
+        return new Token(TT_STRING, string.toString()).setPosStart(posStart).setPosEnd(pos);
     }
 }

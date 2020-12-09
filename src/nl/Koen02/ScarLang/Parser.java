@@ -41,6 +41,154 @@ public class Parser {
         return res;
     }
 
+    public ParseResult expr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+
+        if (curTok.matches(TT_KEYWORD, "var")) {
+            res = advance(res);
+            if (!curTok.type.equals(TT_IDENTIFIER))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier"));
+            Token varName = curTok;
+            res = advance(res);
+            if (!curTok.type.equals(TT_EQ))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '='"));
+            res = advance(res);
+            Node expr = res.register(expr());
+            if (res.error != null) return res;
+            return res.success(new VarAssignNode(varName, expr));
+        }
+
+        Node node = res.register(binOpExpr());
+
+        if (res.error != null) {
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'var', 'if', 'for', 'while', 'func', int, float, identifier, '+', '-', '(' or 'not'"));
+        }
+
+        return res.success(node);
+    }
+
+    public ParseResult compExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        if (curTok.matches(TT_KEYWORD, "not")) {
+            Token opTok = curTok;
+            res = advance(res);
+            Node node = res.register(compExpr());
+            if (res.error != null) return res;
+            return res.success(new UnaryOpNode(opTok, node));
+        }
+
+        String[] binOps = {TT_EE, TT_NE, TT_LT, TT_GT, TT_LTE, TT_GTE};
+        Node node = res.register(binOp(this.getClass().getMethod("arithExpr"), null, Arrays.asList(binOps)));
+        if (res.error != null) {
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(' or 'not'"));
+        }
+        return res.success(node);
+    }
+
+    public ParseResult arithExpr() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        String[] binOps = {TT_PLUS, TT_MIN};
+        return binOp(this.getClass().getMethod("term"), null, Arrays.asList(binOps));
+    }
+
+    public ParseResult term() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        String[] binOps = {TT_MUL, TT_DIV};
+        return binOp(this.getClass().getMethod("factor"), null, Arrays.asList(binOps));
+    }
+
+    public ParseResult factor() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        Token tok = curTok;
+
+        if (TT_PLUS.equals(tok.type) || TT_MIN.equals(tok.type)) {
+            res = advance(res);
+            Node factor = res.register(factor());
+            if (res.error != null) return res;
+            return res.success(new UnaryOpNode(tok, factor));
+        }
+        return power();
+    }
+
+    public ParseResult power() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        String[] binOps = {TT_POW};
+        return binOp(this.getClass().getMethod("call"), null, Arrays.asList(binOps));
+    }
+
+    public ParseResult call() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        Node atom = res.register(atom());
+        if (res.error != null) return res;
+
+        if (curTok.type.equals(TT_LPAR)) {
+            res = advance(res);
+            ArrayList<Node> argNodes = new ArrayList<>();
+            if (curTok.type.equals(TT_RPAR)) {
+                res = advance(res);
+            } else {
+                argNodes.add(res.register(expr()));
+                if (res.error != null)
+                    return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd,
+                            "Expected ')', 'var', 'if', 'for', 'while', 'fun', int, float, identifier, '+', '-', '(' or 'not'"));
+
+                while (curTok.type.equals(TT_COMMA)) {
+                    res = advance(res);
+                    argNodes.add(res.register(expr()));
+                    if (res.error != null) return res;
+                }
+
+                if (!curTok.type.equals(TT_RPAR))
+                    return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected ',' or ')'"));
+
+                res = advance(res);
+            }
+            return res.success(new CallNode(atom, argNodes));
+        }
+        return res.success(atom);
+    }
+
+    public ParseResult atom() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        Token tok = curTok;
+
+        if (TT_INT.equals(tok.type) || TT_FLOAT.equals(tok.type)) {
+            res = advance(res);
+            return res.success(new NumberNode(tok));
+        } else if (TT_STRING.equals(tok.type)) {
+            res = advance(res);
+            return res.success(new StringNode(tok));
+        } else if (TT_IDENTIFIER.equals(tok.type)) {
+            res = advance(res);
+            return res.success(new VarAccessNode(tok));
+        } else if (TT_LPAR.equals(tok.type)) {
+            res = advance(res);
+            Node expr = res.register(expr());
+            if (res.error != null) return res;
+            if (curTok.type.equals(TT_RPAR)) {
+                res = advance(res);
+                return res.success(expr);
+            } else {
+                return res.failure(new InvalidSyntaxError(tok.posStart, tok.posEnd, "Expected ')'"));
+            }
+        } else if (tok.matches(TT_KEYWORD, "if")) {
+            Node ifExpr = res.register(ifExpr());
+            if (res.error != null) return res;
+            return res.success(ifExpr);
+        } else if (tok.matches(TT_KEYWORD, "for")) {
+            Node forExpr = res.register(forExpr());
+            if (res.error != null) return res;
+            return res.success(forExpr);
+        } else if (tok.matches(TT_KEYWORD, "while")) {
+            Node whileExpr = res.register(whileExpr());
+            if (res.error != null) return res;
+            return res.success(whileExpr);
+        } else if (tok.matches(TT_KEYWORD, "func")) {
+            Node whileExpr = res.register(funcDef());
+            if (res.error != null) return res;
+            return res.success(whileExpr);
+        }
+
+        return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(', 'IF', 'FOR', 'WHILE', 'FUN'"));
+    }
+
     public ParseResult ifExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
         ArrayList<ArrayList<Node>> cases = new ArrayList<>();
@@ -145,113 +293,54 @@ public class Parser {
         return res.success(new WhileNode(condition, body));
     }
 
-    public ParseResult atom() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public ParseResult funcDef() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
-        Token tok = curTok;
+        if (!curTok.matches(TT_KEYWORD, "func"))
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'func'"));
 
-        if (TT_INT.equals(tok.type) || TT_FLOAT.equals(tok.type)) {
+        res = advance(res);
+
+        Token varNameTok;
+        if (curTok.type.equals(TT_IDENTIFIER)) {
+            varNameTok = curTok;
             res = advance(res);
-            return res.success(new NumberNode(tok));
-        } else if (TT_IDENTIFIER.equals(tok.type)) {
+            if (!curTok.type.equals(TT_LPAR))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '('"));
+        } else {
+            varNameTok = null;
+            if (!curTok.type.equals(TT_LPAR))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier or '('"));
+        }
+        res = advance(res);
+        ArrayList<Token> argNameToks = new ArrayList<>();
+        if (curTok.type.equals(TT_IDENTIFIER)) {
+            argNameToks.add(curTok);
             res = advance(res);
-            return res.success(new VarAccessNode(tok));
-        } else if (TT_LPAR.equals(tok.type)) {
-            res = advance(res);
-            Node expr = res.register(expr());
-            if (res.error != null) return res;
-            if (curTok.type.equals(TT_RPAR)) {
+
+            while (curTok.type.equals(TT_COMMA)) {
                 res = advance(res);
-                return res.success(expr);
-            } else {
-                return res.failure(new InvalidSyntaxError(tok.posStart, tok.posEnd, "Expected ')'"));
+                if (!curTok.type.equals(TT_IDENTIFIER))
+                    return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier"));
+                argNameToks.add(curTok);
+                res = advance(res);
             }
-        } else if (tok.matches(TT_KEYWORD, "if")) {
-            Node ifExpr = res.register(ifExpr());
-            if (res.error != null) return res;
-            return res.success(ifExpr);
-        } else if (tok.matches(TT_KEYWORD, "for")) {
-            Node forExpr = res.register(forExpr());
-            if (res.error != null) return res;
-            return res.success(forExpr);
-        } else if (tok.matches(TT_KEYWORD, "while")) {
-            Node whileExpr = res.register(whileExpr());
-            if (res.error != null) return res;
-            return res.success(whileExpr);
+            if (!curTok.type.equals(TT_RPAR))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected ',' or ')'"));
+        } else {
+            if (!curTok.type.equals(TT_RPAR))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier or ')'"));
         }
+        res = advance(res);
 
-        return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-' or '('"));
-    }
+        if (!curTok.type.equals(TT_ARROW))
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '->'"));
 
-    public ParseResult power() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        String[] binOps = {TT_POW};
-        return binOp(this.getClass().getMethod("atom"), null, Arrays.asList(binOps));
-    }
+        res = advance(res);
 
-    public ParseResult factor() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        ParseResult res = new ParseResult();
-        Token tok = curTok;
+        Node nodeToReturn = res.register(expr());
+        if (res.error != null) return res;
 
-        if (TT_PLUS.equals(tok.type) || TT_MIN.equals(tok.type)) {
-            res = advance(res);
-            Node factor = res.register(factor());
-            if (res.error != null) return res;
-            return res.success(new UnaryOpNode(tok, factor));
-        }
-        return power();
-    }
-
-    public ParseResult term() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        String[] binOps = {TT_MUL, TT_DIV};
-        return binOp(this.getClass().getMethod("factor"), null, Arrays.asList(binOps));
-    }
-
-    public ParseResult arithExpr() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        String[] binOps = {TT_PLUS, TT_MIN};
-        return binOp(this.getClass().getMethod("term"), null, Arrays.asList(binOps));
-    }
-
-    public ParseResult compExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        ParseResult res = new ParseResult();
-        if (curTok.matches(TT_KEYWORD, "not")) {
-            Token opTok = curTok;
-            res = advance(res);
-            Node node = res.register(compExpr());
-            if (res.error != null) return res;
-            return res.success(new UnaryOpNode(opTok, node));
-        }
-
-        String[] binOps = {TT_EE, TT_NE, TT_LT, TT_GT, TT_LTE, TT_GTE};
-        Node node = res.register(binOp(this.getClass().getMethod("arithExpr"), null, Arrays.asList(binOps)));
-        if (res.error != null) {
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(' or 'not'"));
-        }
-        return res.success(node);
-    }
-
-    public ParseResult expr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        ParseResult res = new ParseResult();
-
-        if (curTok.matches(TT_KEYWORD, "var")) {
-            res = advance(res);
-            if (!curTok.type.equals(TT_IDENTIFIER))
-                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier"));
-            Token varName = curTok;
-            res = advance(res);
-            if (!curTok.type.equals(TT_EQ))
-                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '='"));
-            res = advance(res);
-            Node expr = res.register(expr());
-            if (res.error != null) return res;
-            return res.success(new VarAssignNode(varName, expr));
-        }
-
-        Node node = res.register(binOpExpr());
-
-        if (res.error != null) {
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'var', int, float, identifier, '+', '-' or '('"));
-        }
-
-        return res.success(node);
+        return res.success(new FuncDefNode(varNameTok, argNameToks, nodeToReturn));
     }
 
     public ParseResult binOpExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {

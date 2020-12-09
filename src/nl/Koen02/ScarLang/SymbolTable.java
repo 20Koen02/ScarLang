@@ -1,25 +1,28 @@
 package nl.Koen02.ScarLang;
 
+import nl.Koen02.ScarLang.Type.NumberType;
+import nl.Koen02.ScarLang.Type.Type;
+
 import java.util.HashMap;
 
 public class SymbolTable {
-    HashMap<String, Number> symbols;
+    HashMap<String, Type> symbols;
     SymbolTable parent;
 
-    public SymbolTable() {
+    public SymbolTable(SymbolTable parent) {
         symbols = new HashMap<>();
-        parent = null;
+        this.parent = parent;
     }
 
-    public Number get(String name) {
-        Number value = symbols.get(name);
+    public Type get(String name) {
+        Type value = symbols.get(name);
         if (value == null && parent != null) {
             return parent.get(name);
         }
         return value;
     }
 
-    public void set(String name, Number value) {
+    public void set(String name, Type value) {
        symbols.put(name, value);
     }
 
@@ -28,8 +31,8 @@ public class SymbolTable {
     }
 
     public void addDefaultSymbols() {
-        set("null", new Number((double) 0));
-        set("true", new Number((double) 1));
-        set("false", new Number((double) 0));
+        set("null", new NumberType((double) 0));
+        set("true", new NumberType((double) 1));
+        set("false", new NumberType((double) 0));
     }
 }

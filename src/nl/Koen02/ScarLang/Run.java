@@ -1,8 +1,8 @@
 package nl.Koen02.ScarLang;
 
 import nl.Koen02.ScarLang.Error.Error;
+import nl.Koen02.ScarLang.Type.Type;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 public class Run {
@@ -20,21 +20,21 @@ public class Run {
             if (ast.error != null) throw ast.error;
 
             // Global Symbol Table
-            SymbolTable globalSymbolTable = new SymbolTable();
+            SymbolTable globalSymbolTable = new SymbolTable(null);
             globalSymbolTable.addDefaultSymbols();
 
             // Run Program
             Interpreter interpreter = new Interpreter();
             if (context.symbolTable == null) context.symbolTable = globalSymbolTable;
-            Number result = interpreter.visit(ast.node, context);
+            Type result = interpreter.visit(ast.node, context);
 
             // Log Output
             if (result == null) return null;
             return result.get();
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
         } catch (Error e) {
             System.out.println(e.getError());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return "";
     }
