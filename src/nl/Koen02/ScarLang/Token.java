@@ -20,6 +20,10 @@ public class Token {
         return this;
     }
 
+    public Boolean matches( String type, String value) {
+        return this.type.equals(type) && this.value.equals(value);
+    }
+
     public String get() {
         return String.format("%s:%s", type, value);
     }

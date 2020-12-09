@@ -3,6 +3,7 @@ package nl.Koen02.ScarLang;
 import nl.Koen02.ScarLang.Error.IllegalCharError;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static nl.Koen02.ScarLang.TokenTypes.*;
 
@@ -32,8 +33,10 @@ public class Lexer {
 
             if (curChar.equals("\t") || curChar.equals(" ")) {
                 advance();
-            } else if (TT_DIG.contains(curChar)) {
+            } else if (TT_DIGITS.contains(curChar)) {
                 tokens.add(makeNumber());
+            } else if (TT_LETTERS.contains(curChar)) {
+                tokens.add(makeIdentifier());
             } else if (curChar.equals("+")) {
                 tokens.add(new Token(TT_PLUS, null).setPosStart(pos));
                 advance();
@@ -48,6 +51,9 @@ public class Lexer {
                 advance();
             } else if (curChar.equals("^")) {
                 tokens.add(new Token(TT_POW, null).setPosStart(pos));
+                advance();
+            } else if (curChar.equals("=")) {
+                tokens.add(new Token(TT_EQ, null).setPosStart(pos));
                 advance();
             } else if (curChar.equals("(")) {
                 tokens.add(new Token(TT_LPAR, null).setPosStart(pos));
@@ -69,12 +75,26 @@ public class Lexer {
         return tokens;
     }
 
+    private Token makeIdentifier() {
+        StringBuilder idStrBuild = new StringBuilder();
+        Position posStart = pos.getCopy();
+
+        while (curChar != null && (TT_ALPHANUMERIC + "_").contains(curChar)) {
+            idStrBuild.append(curChar);
+            advance();
+        }
+        String idStr = idStrBuild.toString();
+
+        String tokType = KEYWORDS.contains(idStr) ? TT_KEYWORD : TT_IDENTIFIER;
+        return new Token(tokType, idStr).setPosStart(posStart).setPosEnd(pos);
+    }
+
     private Token makeNumber() {
         StringBuilder num = new StringBuilder();
         int dots = 0;
         Position posStart = pos.getCopy();
 
-        while (curChar != null && (TT_DIG + ".").contains(curChar)) {
+        while (curChar != null && (TT_DIGITS + ".").contains(curChar)) {
             if (curChar.equals(".")) {
                 dots++;
                 num.append(".");

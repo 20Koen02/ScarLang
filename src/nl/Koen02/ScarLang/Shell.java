@@ -1,11 +1,8 @@
 package nl.Koen02.ScarLang;
 
-import nl.Koen02.ScarLang.Error.Error;
-import nl.Koen02.ScarLang.Node.Node;
-import nl.Koen02.ScarLang.Node.NumberNode;
-
-import java.util.ArrayList;
 import java.util.Scanner;
+
+import static nl.Koen02.ScarLang.Run.run;
 
 public class Shell {
     static String prefix = "\n-> \t";
@@ -16,29 +13,7 @@ public class Shell {
             System.out.print(prefix);
             String nextLine = stdin.nextLine();
             if (nextLine.equals("exit()")) break;
-            run("<stdin>", nextLine);
-        }
-    }
-
-    private static void run(String fn, String code) {
-        try {
-            // Generate Tokens
-            Lexer lexer = new Lexer(fn, code);
-            ArrayList<Token> tokens = lexer.makeTokens();
-
-            // Generate Abstract Syntax Tree
-            Parser parser = new Parser(tokens);
-            Node ast = parser.parse();
-
-            // Run Program
-            Interpreter interpreter = new Interpreter();
-            Context context = new Context("<program>");
-            Number result = interpreter.visit(ast, context);
-
-            // Log Output
-            System.out.println(result.get());
-        } catch (Error e) {
-            System.out.println(e.getError());
+            System.out.println(run("<stdin>", nextLine));
         }
     }
 }

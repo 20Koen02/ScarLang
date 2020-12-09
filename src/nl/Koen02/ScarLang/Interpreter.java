@@ -1,10 +1,7 @@
 package nl.Koen02.ScarLang;
 
 import nl.Koen02.ScarLang.Error.RunTimeError;
-import nl.Koen02.ScarLang.Node.BinOpNode;
-import nl.Koen02.ScarLang.Node.Node;
-import nl.Koen02.ScarLang.Node.NumberNode;
-import nl.Koen02.ScarLang.Node.UnaryOpNode;
+import nl.Koen02.ScarLang.Node.*;
 
 import static nl.Koen02.ScarLang.TokenTypes.*;
 
@@ -16,8 +13,30 @@ public class Interpreter {
             return visitBinOpNode((BinOpNode) node, context);
         } else if (node instanceof UnaryOpNode) {
             return visitUnaryOpNode((UnaryOpNode) node, context);
+        } else if (node instanceof VarAccessNode) {
+            return visitVarAccessNode((VarAccessNode) node, context);
+        } else if (node instanceof VarAssignNode) {
+            return visitVarAssignNode((VarAssignNode) node, context);
         }
         return null;
+    }
+
+    public Number visitVarAccessNode(VarAccessNode node, Context context) throws RunTimeError {
+        String varName = node.varNameToken.value;
+        Number value = context.symbolTable.get(varName);
+
+        if (value == null) throw new RunTimeError(node.posStart, node.posEnd, String.format("'%s' is not defined", varName), context);
+
+        value = value.getCopy().setPos(node.posStart, node.posEnd);
+        return value;
+    }
+
+    public Number visitVarAssignNode(VarAssignNode node, Context context) throws RunTimeError {
+        String varName = node.varNameToken.value;
+        Number value = visit(node.valueNode, context);
+
+        context.symbolTable.set(varName, value);
+        return value;
     }
 
     public Number visitNumberNode(NumberNode node, Context context) {

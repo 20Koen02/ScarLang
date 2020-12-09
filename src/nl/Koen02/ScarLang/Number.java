@@ -44,6 +44,13 @@ public class Number {
         return new Number(Math.pow(value, other.value)).setContext(context).setPos(posStart, posEnd);
     }
 
+    public Number getCopy() {
+        Number copy = new Number(value);
+        copy.setPos(posStart, posEnd);
+        copy.setContext(context);
+        return copy;
+    }
+
     public String get() {
         return value == Math.floor(value) ? String.valueOf(Math.round(value)) : value.toString();
     }
