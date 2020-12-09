@@ -36,7 +36,11 @@ public class TokenTypes {
             "if",
             "then",
             "elif",
-            "else"
+            "else",
+            "for",
+            "to",
+            "step",
+            "while"
     };
     public static final List<String> KEYWORDS = Arrays.asList(KEYWORDS_ARRAY);
 }

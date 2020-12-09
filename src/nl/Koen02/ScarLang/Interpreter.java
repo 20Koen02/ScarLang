@@ -21,6 +21,10 @@ public class Interpreter {
             return visitVarAssignNode((VarAssignNode) node, context);
         } else if (node instanceof IfNode) {
             return visitIfNode((IfNode) node, context);
+        } else if (node instanceof ForNode) {
+            return visitForNode((ForNode) node, context);
+        } else if (node instanceof WhileNode) {
+            return visitWhileNode((WhileNode) node, context);
         }
         return null;
     }
@@ -102,6 +106,36 @@ public class Interpreter {
             if (conditionValue.is_true()) return visit(expression, context);
         }
         if (node.elseCase != null) return visit(node.elseCase, context);
+        return null;
+    }
+
+    private Number visitForNode(ForNode node, Context context) throws RunTimeError {
+        Number startValue = visit(node.startValueNode, context);
+        Number endValue = visit(node.endValueNode, context);
+        Number stepValue = node.stepValueNode != null ? visit(node.stepValueNode, context) : new Number(1d);
+        Double i = startValue.value;
+        if (stepValue.value >= 0) {
+            while (i < endValue.value) {
+                context.symbolTable.set(node.varNameTok.value, new Number(i));
+                i += stepValue.value;
+                visit(node.bodyNode, context);
+            }
+        } else {
+            while (i > endValue.value) {
+                context.symbolTable.set(node.varNameTok.value, new Number(i));
+                i += stepValue.value;
+                visit(node.bodyNode, context);
+            }
+        }
+        return null;
+    }
+
+    private Number visitWhileNode(WhileNode node, Context context) throws RunTimeError {
+        while (true) {
+            Number condition = visit(node.conditionNode, context);
+            if (!condition.is_true()) break;
+            visit(node.bodyNode, context);
+        }
         return null;
     }
 }
