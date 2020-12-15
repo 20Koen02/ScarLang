@@ -3,6 +3,8 @@ package nl.Koen02.ScarLang;
 import nl.Koen02.ScarLang.Error.RunTimeError;
 import nl.Koen02.ScarLang.Node.*;
 import nl.Koen02.ScarLang.Type.*;
+import nl.Koen02.ScarLang.Type.Function.BaseFunction;
+import nl.Koen02.ScarLang.Type.Function.FunctionType;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -47,7 +49,7 @@ public class Interpreter {
 
         if (value == null) throw new RunTimeError(node.posStart, node.posEnd, String.format("'%s' is not defined", varName), context);
 
-        value = value.getCopy().setPos(node.posStart, node.posEnd);
+        value = value.getCopy().setPos(node.posStart, node.posEnd).setContext(context);
         return value;
     }
 
@@ -181,13 +183,16 @@ public class Interpreter {
 
     private Type visitCallNode(CallNode node, Context context) throws Exception {
         ArrayList<Type> args = new ArrayList<>();
-        FunctionType valueToCall = (FunctionType) visit(node.nodeToCall, context);
-        valueToCall = (FunctionType) valueToCall.getCopy().setPos(node.posStart, node.posEnd);
+        BaseFunction valueToCall = (BaseFunction) visit(node.nodeToCall, context);
+        valueToCall = (BaseFunction) valueToCall.getCopy().setPos(node.posStart, node.posEnd);
 
         for (Node argNode : node.argNodes) {
             args.add(visit(argNode, context));
         }
 
-        return valueToCall.execute(args);
+        Type ret = valueToCall.execute(args);
+        ret.getCopy().setPos(node.posStart, node.posEnd).setContext(context);
+
+        return ret;
     }
 }

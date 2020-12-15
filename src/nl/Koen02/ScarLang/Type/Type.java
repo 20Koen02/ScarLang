@@ -7,9 +7,9 @@ import nl.Koen02.ScarLang.Position;
 import java.util.ArrayList;
 
 public class Type {
-    Position posStart = null;
-    Position posEnd = null;
-    Context context = null;
+    public Position posStart = null;
+    public Position posEnd = null;
+    public Context context = null;
 
     public Type setPos(Position posStart, Position posEnd) {
         this.posStart = posStart;

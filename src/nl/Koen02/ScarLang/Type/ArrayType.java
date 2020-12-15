@@ -3,7 +3,6 @@ package nl.Koen02.ScarLang.Type;
 import nl.Koen02.ScarLang.Error.RunTimeError;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class ArrayType extends Type{
     public ArrayList<Type> elements;
@@ -49,7 +48,7 @@ public class ArrayType extends Type{
     }
 
     public ArrayType getCopy() {
-        ArrayType copy = new ArrayType(new ArrayList<>(elements));
+        ArrayType copy = new ArrayType(elements);
         copy.setPos(posStart, posEnd);
         copy.setContext(context);
         return copy;

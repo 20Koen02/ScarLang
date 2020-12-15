@@ -5,6 +5,9 @@ import nl.Koen02.ScarLang.Error.RunTimeError;
 public class IntegerType extends Type {
     public Integer value;
 
+    public static IntegerType zero = new IntegerType(0);
+    public static IntegerType one = new IntegerType(1);
+
     public IntegerType(Integer value) {
         this.value = value;
     }

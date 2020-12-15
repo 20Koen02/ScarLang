@@ -1,5 +1,7 @@
 package nl.Koen02.ScarLang;
 
+import nl.Koen02.ScarLang.Type.FloatType;
+import nl.Koen02.ScarLang.Type.Function.Stdlib.*;
 import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.Type;
 
@@ -31,8 +33,20 @@ public class SymbolTable {
     }
 
     public void addDefaultSymbols() {
-        set("null", new IntegerType(0));
-        set("true", new IntegerType(1));
-        set("false", new IntegerType(0));
+        set("null", IntegerType.zero);
+        set("true", IntegerType.one);
+        set("false", IntegerType.zero);
+        set("mathPi", FloatType.mathPi);
+        set("print", PrintFunction.getInstance());
+        set("input", InputFunction.getInstance());
+        set("clear", ClearFunction.getInstance());
+        set("isInteger", IsIntegerFunction.getInstance());
+        set("isFloat", IsFloatFunction.getInstance());
+        set("isString", IsStringFunction.getInstance());
+        set("isArray", IsArrayFunction.getInstance());
+        set("isFunction", IsFunctionFunction.getInstance());
+        set("append", AppendFunction.getInstance());
+        set("extend", ExtendFunction.getInstance());
+        set("pop", PopFunction.getInstance());
     }
 }

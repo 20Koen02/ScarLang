@@ -5,6 +5,8 @@ import nl.Koen02.ScarLang.Error.RunTimeError;
 public class FloatType extends Type {
     public Float value;
 
+    public static FloatType mathPi = new FloatType((float) Math.PI);
+
     public FloatType(Float value) {
         this.value = value;
     }
