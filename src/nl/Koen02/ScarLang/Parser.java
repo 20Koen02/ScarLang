@@ -62,7 +62,7 @@ public class Parser {
         Node node = res.register(binOpExpr());
 
         if (res.error != null) {
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'var', 'if', 'for', 'while', 'func', int, float, identifier, '+', '-', '(' or 'not'"));
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'var', 'if', 'for', 'while', 'func', int, float, identifier, '+', '-', '(', '[' or 'not'"));
         }
 
         return res.success(node);
@@ -81,7 +81,7 @@ public class Parser {
         String[] binOps = {TT_EE, TT_NE, TT_LT, TT_GT, TT_LTE, TT_GTE};
         Node node = res.register(binOp(this.getClass().getMethod("arithExpr"), null, Arrays.asList(binOps)));
         if (res.error != null) {
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(' or 'not'"));
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(', '[' or 'not'"));
         }
         return res.success(node);
     }
@@ -128,7 +128,7 @@ public class Parser {
                 argNodes.add(res.register(expr()));
                 if (res.error != null)
                     return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd,
-                            "Expected ')', 'var', 'if', 'for', 'while', 'fun', int, float, identifier, '+', '-', '(' or 'not'"));
+                            "Expected ')', 'var', 'if', 'for', 'while', 'fun', int, float, identifier, '+', '-', '(', '[' or 'not'"));
 
                 while (curTok.type.equals(TT_COMMA)) {
                     res = advance(res);
@@ -172,6 +172,10 @@ public class Parser {
             } else {
                 return res.failure(new InvalidSyntaxError(tok.posStart, tok.posEnd, "Expected ')'"));
             }
+        } else if (TT_LSQUARE.equals(tok.type)) {
+            Node listExpr = res.register(listExpr());
+            if (res.error != null) return res;
+            return res.success(listExpr);
         } else if (tok.matches(TT_KEYWORD, "if")) {
             Node ifExpr = res.register(ifExpr());
             if (res.error != null) return res;
@@ -190,7 +194,36 @@ public class Parser {
             return res.success(whileExpr);
         }
 
-        return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(', 'IF', 'FOR', 'WHILE', 'FUN'"));
+        return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected int, float, identifier, '+', '-', '(', '[', 'if', 'for', 'while', 'func'"));
+    }
+
+    private ParseResult listExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        ArrayList<Node> elementNodes = new ArrayList<>();
+        Position posStart = curTok.posStart.getCopy();
+
+        if (!curTok.type.equals(TT_LSQUARE))
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '['"));
+
+        res = advance(res);
+
+        if (curTok.type.equals(TT_RSQUARE)) {
+            res = advance(res);
+        } else {
+            elementNodes.add(res.register(expr()));
+            if (res.error != null)
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd,
+                        "Expected ']', 'var', 'if', 'for', 'while', 'func', int, float, identifier, '+', '-', '(', '[' or 'not'"));
+
+            while (curTok.type.equals(TT_COMMA)) {
+                res = advance(res);
+                elementNodes.add(res.register(expr()));
+                if (res.error != null) return res;
+            }
+            res = advance(res);
+        }
+
+        return res.success(new ArrayNode(elementNodes, posStart, curTok.posEnd.getCopy()));
     }
 
     public ParseResult ifExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {

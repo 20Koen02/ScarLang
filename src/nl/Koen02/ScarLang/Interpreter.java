@@ -35,6 +35,8 @@ public class Interpreter {
             return visitCallNode((CallNode) node, context);
         } else if (node instanceof StringNode) {
             return visitStringNode((StringNode) node, context);
+        } else if (node instanceof ArrayNode) {
+            return visitArrayNode((ArrayNode) node, context);
         }
         return null;
     }
@@ -57,8 +59,8 @@ public class Interpreter {
         return value;
     }
 
-    private Type visitStringNode(StringNode node, Context context) {
-        return new StringType(node.tok.value).setContext(context).setPos(node.posStart, node.posEnd);
+    private StringType visitStringNode(StringNode node, Context context) {
+        return (StringType) new StringType(node.tok.value).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
     public IntegerType visitIntegerNode(IntegerNode node, Context context) {
@@ -67,6 +69,14 @@ public class Interpreter {
 
     public FloatType visitFloatNode(FloatNode node, Context context) {
         return (FloatType) new FloatType(Float.parseFloat(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd);
+    }
+
+    public ArrayType visitArrayNode(ArrayNode node, Context context) throws Exception {
+        ArrayList<Type> elements = new ArrayList<>();
+        for (Node elementNode : node.elementNodes) {
+            elements.add(visit(elementNode, context));
+        }
+        return (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
     public Type visitBinOpNode(BinOpNode node, Context context) throws Exception {
@@ -127,7 +137,8 @@ public class Interpreter {
         return null;
     }
 
-    private Type visitForNode(ForNode node, Context context) throws Exception {
+    private ArrayType visitForNode(ForNode node, Context context) throws Exception {
+        ArrayList<Type> elements = new ArrayList<>();
         Type startValue = visit(node.startValueNode, context);
         Type endValue = visit(node.endValueNode, context);
         Type stepValue = visit(node.stepValueNode, context);
@@ -136,25 +147,26 @@ public class Interpreter {
             while (startValue.getComparisonLt(endValue).isTrue()) {
                 context.symbolTable.set(node.varNameTok.value, startValue.getCopy());
                 startValue = startValue.addedTo(stepValue);
-                visit(node.bodyNode, context);
+                elements.add(visit(node.bodyNode, context));
             }
         } else {
             while (startValue.getComparisonGt(endValue).isTrue()) {
                 context.symbolTable.set(node.varNameTok.value, startValue.getCopy());
                 startValue = startValue.addedTo(stepValue);
-                visit(node.bodyNode, context);
+                elements.add(visit(node.bodyNode, context));
             }
         }
-        return null;
+        return (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
-    private Type visitWhileNode(WhileNode node, Context context) throws Exception {
+    private ArrayType visitWhileNode(WhileNode node, Context context) throws Exception {
+        ArrayList<Type> elements = new ArrayList<>();
         while (true) {
             Type condition = visit(node.conditionNode, context);
             if (!condition.isTrue()) break;
-            visit(node.bodyNode, context);
+            elements.add(visit(node.bodyNode, context));
         }
-        return null;
+        return (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
     private FunctionType visitFuncDefNode(FuncDefNode node, Context context) {
