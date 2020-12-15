@@ -34,6 +34,10 @@ public class Type {
         throw illegalOperation(other);
     }
 
+    public Type multipliedByMinOne() throws RunTimeError {
+        throw illegalOperation(new IntegerType(-1));
+    }
+
     public Type dividedBy(Type other) throws RunTimeError {
         throw illegalOperation(other);
     }
@@ -86,7 +90,11 @@ public class Type {
         throw new Exception("No copy method defined");
     }
 
-    public boolean is_true() {
+    public boolean isPositive() throws RunTimeError {
+        throw illegalOperation(null);
+    }
+
+    public boolean isTrue() {
         return false;
     }
     

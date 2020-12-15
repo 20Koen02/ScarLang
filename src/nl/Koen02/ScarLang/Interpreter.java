@@ -2,10 +2,7 @@ package nl.Koen02.ScarLang;
 
 import nl.Koen02.ScarLang.Error.RunTimeError;
 import nl.Koen02.ScarLang.Node.*;
-import nl.Koen02.ScarLang.Type.FunctionType;
-import nl.Koen02.ScarLang.Type.NumberType;
-import nl.Koen02.ScarLang.Type.StringType;
-import nl.Koen02.ScarLang.Type.Type;
+import nl.Koen02.ScarLang.Type.*;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -14,8 +11,10 @@ import static nl.Koen02.ScarLang.TokenTypes.*;
 
 public class Interpreter {
     public Type visit(Node node, Context context) throws Exception {
-        if (node instanceof NumberNode) {
-            return visitNumberNode((NumberNode) node, context);
+        if (node instanceof IntegerNode) {
+            return visitIntegerNode((IntegerNode) node, context);
+        } else if (node instanceof FloatNode) {
+            return visitFloatNode((FloatNode) node, context);
         } else if (node instanceof BinOpNode) {
             return visitBinOpNode((BinOpNode) node, context);
         } else if (node instanceof UnaryOpNode) {
@@ -62,93 +61,97 @@ public class Interpreter {
         return new StringType(node.tok.value).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
-    public NumberType visitNumberNode(NumberNode node, Context context) {
-        return (NumberType) new NumberType(Double.parseDouble(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd);
+    public IntegerType visitIntegerNode(IntegerNode node, Context context) {
+        return (IntegerType) new IntegerType(Integer.parseInt(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd);
+    }
+
+    public FloatType visitFloatNode(FloatNode node, Context context) {
+        return (FloatType) new FloatType(Float.parseFloat(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
     public Type visitBinOpNode(BinOpNode node, Context context) throws Exception {
         Type left = visit(node.leftNode, context);
         Type right = visit(node.rightNode, context);
 
-        Type number = null;
+        Type type = null;
         if (TT_PLUS.equals(node.opTok.type)) {
-            number = left.addedTo(right);
+            type = left.addedTo(right);
         } else if (TT_MIN.equals(node.opTok.type)) {
-            number = left.subtractedBy(right);
+            type = left.subtractedBy(right);
         } else if (TT_MUL.equals(node.opTok.type)) {
-            number = left.multipliedBy(right);
+            type = left.multipliedBy(right);
         } else if (TT_DIV.equals(node.opTok.type)) {
-            number = left.dividedBy(right);
+            type = left.dividedBy(right);
         } else if (TT_POW.equals(node.opTok.type)) {
-            number = left.poweredBy(right);
+            type = left.poweredBy(right);
         } else if (TT_EE.equals(node.opTok.type)) {
-            number = left.getComparisonEe(right);
+            type = left.getComparisonEe(right);
         } else if (TT_NE.equals(node.opTok.type)) {
-            number = left.getComparisonNe(right);
+            type = left.getComparisonNe(right);
         } else if (TT_LT.equals(node.opTok.type)) {
-            number = left.getComparisonLt(right);
+            type = left.getComparisonLt(right);
         } else if (TT_GT.equals(node.opTok.type)) {
-            number = left.getComparisonGt(right);
+            type = left.getComparisonGt(right);
         } else if (TT_LTE.equals(node.opTok.type)) {
-            number = left.getComparisonLte(right);
+            type = left.getComparisonLte(right);
         } else if (TT_GTE.equals(node.opTok.type)) {
-            number = left.getComparisonGte(right);
+            type = left.getComparisonGte(right);
         } else if (node.opTok.matches(TT_KEYWORD, "and")) {
-            number = left.andOperated(right);
+            type = left.andOperated(right);
         } else if (node.opTok.matches(TT_KEYWORD, "or")) {
-            number = left.orOperated(right);
+            type = left.orOperated(right);
         }
 
-        if (number == null) return null;
-        return number.setPos(node.posStart, node.posEnd);
+        if (type == null) return null;
+        return type.setPos(node.posStart, node.posEnd);
     }
 
-    public NumberType visitUnaryOpNode(UnaryOpNode node, Context context) throws Exception {
-        NumberType number = (NumberType) visit(node.node, context);
+    public Type visitUnaryOpNode(UnaryOpNode node, Context context) throws Exception {
+        Type number = visit(node.node, context);
         if (node.opTok.type.equals(TT_MIN)) {
-            number = number.multipliedBy(new NumberType((double) -1));
+            number = number.multipliedByMinOne();
         } else if (node.opTok.matches(TT_KEYWORD, "not")) {
             number = number.notOperated();
         }
-        return (NumberType) number.setPos(node.posStart, node.posEnd);
+        return number.setPos(node.posStart, node.posEnd);
     }
 
-    private NumberType visitIfNode(IfNode node, Context context) throws Exception {
+    private IntegerType visitIfNode(IfNode node, Context context) throws Exception {
         for (ArrayList<Node> condExpr : node.cases) {
             Node condition = condExpr.get(0);
             Node expression = condExpr.get(1);
-            NumberType conditionValue = (NumberType) visit(condition, context);
-            if (conditionValue.is_true()) return (NumberType) visit(expression, context);
+            IntegerType conditionValue = (IntegerType) visit(condition, context);
+            if (conditionValue.isTrue()) return (IntegerType) visit(expression, context);
         }
-        if (node.elseCase != null) return (NumberType) visit(node.elseCase, context);
+        if (node.elseCase != null) return (IntegerType) visit(node.elseCase, context);
         return null;
     }
 
-    private NumberType visitForNode(ForNode node, Context context) throws Exception {
-        NumberType startValue = (NumberType) visit(node.startValueNode, context);
-        NumberType endValue = (NumberType) visit(node.endValueNode, context);
-        NumberType stepValue = node.stepValueNode != null ? (NumberType) visit(node.stepValueNode, context) : new NumberType(1d);
-        Double i = startValue.value;
-        if (stepValue.value >= 0) {
-            while (i < endValue.value) {
-                context.symbolTable.set(node.varNameTok.value, new NumberType(i));
-                i += stepValue.value;
+    private Type visitForNode(ForNode node, Context context) throws Exception {
+        Type startValue = visit(node.startValueNode, context);
+        Type endValue = visit(node.endValueNode, context);
+        Type stepValue = visit(node.stepValueNode, context);
+
+        if (stepValue.isPositive()) {
+            while (startValue.getComparisonLt(endValue).isTrue()) {
+                context.symbolTable.set(node.varNameTok.value, startValue.getCopy());
+                startValue = startValue.addedTo(stepValue);
                 visit(node.bodyNode, context);
             }
         } else {
-            while (i > endValue.value) {
-                context.symbolTable.set(node.varNameTok.value, new NumberType(i));
-                i += stepValue.value;
+            while (startValue.getComparisonGt(endValue).isTrue()) {
+                context.symbolTable.set(node.varNameTok.value, startValue.getCopy());
+                startValue = startValue.addedTo(stepValue);
                 visit(node.bodyNode, context);
             }
         }
         return null;
     }
 
-    private NumberType visitWhileNode(WhileNode node, Context context) throws Exception {
+    private Type visitWhileNode(WhileNode node, Context context) throws Exception {
         while (true) {
-            NumberType condition = (NumberType) visit(node.conditionNode, context);
-            if (!condition.is_true()) break;
+            Type condition = visit(node.conditionNode, context);
+            if (!condition.isTrue()) break;
             visit(node.bodyNode, context);
         }
         return null;
