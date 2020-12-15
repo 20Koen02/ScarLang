@@ -30,6 +30,7 @@ public class Parser {
             curTok = tokens.get(tokIdx);
         }
         if (res == null) return new ParseResult();
+        res.regAdvancement();
         return res;
     }
 
@@ -149,9 +150,12 @@ public class Parser {
         ParseResult res = new ParseResult();
         Token tok = curTok;
 
-        if (TT_INT.equals(tok.type) || TT_FLOAT.equals(tok.type)) {
+        if (TT_INT.equals(tok.type)) {
             res = advance(res);
-            return res.success(new NumberNode(tok));
+            return res.success(new IntegerNode(tok));
+        } else if (TT_FLOAT.equals(tok.type)) {
+            res = advance(res);
+            return res.success(new FloatNode(tok));
         } else if (TT_STRING.equals(tok.type)) {
             res = advance(res);
             return res.success(new StringNode(tok));
@@ -256,12 +260,12 @@ public class Parser {
         Node endValue = res.register(expr());
         if (res.error != null) return res;
 
-        Node stepValue = null;
-        if (curTok.matches(TT_KEYWORD, "step")) {
-            res = advance(res);
-            stepValue = res.register(expr());
-            if (res.error != null) return res;
-        }
+        if (!curTok.matches(TT_KEYWORD, "step"))
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'step'"));
+
+        res = advance(res);
+        Node stepValue = res.register(expr());
+        if (res.error != null) return res;
 
         if (!curTok.matches(TT_KEYWORD, "then"))
             return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'then'"));

@@ -1,6 +1,6 @@
 package nl.Koen02.ScarLang;
 
-import nl.Koen02.ScarLang.Type.NumberType;
+import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.Type;
 
 import java.util.HashMap;
@@ -31,8 +31,8 @@ public class SymbolTable {
     }
 
     public void addDefaultSymbols() {
-        set("null", new NumberType((double) 0));
-        set("true", new NumberType((double) 1));
-        set("false", new NumberType((double) 0));
+        set("null", new IntegerType(0));
+        set("true", new IntegerType(1));
+        set("false", new IntegerType(0));
     }
 }

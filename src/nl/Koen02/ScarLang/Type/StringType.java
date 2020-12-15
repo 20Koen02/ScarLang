@@ -16,12 +16,12 @@ public class StringType extends Type {
     }
 
     public StringType multipliedBy(Type other) throws RunTimeError {
-        if (other instanceof NumberType) {
-            return (StringType) new StringType(value.repeat(((NumberType) other).value.intValue())).setContext(context).setPos(posStart, posEnd);
+        if (other instanceof IntegerType) {
+            return (StringType) new StringType(value.repeat(((IntegerType) other).value)).setContext(context).setPos(posStart, posEnd);
         } else throw illegalOperation(other);
     }
 
-    public boolean is_true() {
+    public boolean isTrue() {
         return value.length() > 0;
     }
 
