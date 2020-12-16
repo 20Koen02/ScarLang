@@ -7,6 +7,7 @@ public class ParseResult {
     Error error = null;
     Node node = null;
     Integer advanceCount = 0;
+    Integer toReverseCount = 0;
 
     public void regAdvancement() {
         advanceCount += 1;
@@ -16,6 +17,14 @@ public class ParseResult {
         advanceCount += res.advanceCount;
         if (res.error != null) error = res.error;
         return res.node;
+    }
+
+    public Node tryRegister(ParseResult res) {
+        if (res.error != null) {
+            toReverseCount = res.advanceCount;
+            return null;
+        }
+        return register(res);
     }
 
     public ParseResult success(Node node) {

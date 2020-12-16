@@ -35,6 +35,9 @@ public class Lexer {
 
             if (curChar.equals("\t") || curChar.equals(" ")) {
                 advance();
+            } else if (curChar.equals(";") || curChar.equals("\n")) {
+                tokens.add(new Token(TT_NEWLN, null).setPosStart(pos));
+                advance();
             } else if (TT_DIGITS.contains(curChar)) {
                 tokens.add(makeNumber());
             } else if (TT_LETTERS.contains(curChar)) {

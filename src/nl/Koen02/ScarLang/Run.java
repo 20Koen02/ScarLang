@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Run {
     public static Context context = new Context("<program>");
 
-    static String run(String fn, String code) {
+    static Type run(String fn, String code) {
         try {
             // Generate Tokens
             Lexer lexer = new Lexer(fn, code);
@@ -26,16 +26,14 @@ public class Run {
             // Run Program
             Interpreter interpreter = new Interpreter();
             if (context.symbolTable == null) context.symbolTable = globalSymbolTable;
-            Type result = interpreter.visit(ast.node, context);
 
             // Log Output
-            if (result == null) return null;
-            return result.get();
+            return interpreter.visit(ast.node, context);
         } catch (Error e) {
             System.out.println(e.getError());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "";
+        return null;
     }
 }

@@ -8,11 +8,13 @@ public class FuncDefNode extends Node {
     public Token varNameTok;
     public ArrayList<Token> argNameToks;
     public Node bodyNode;
+    public boolean shouldReturnNull;
 
-    public FuncDefNode(Token varNameTok, ArrayList<Token> argNameToks, Node bodyNode) {
+    public FuncDefNode(Token varNameTok, ArrayList<Token> argNameToks, Node bodyNode, boolean shouldReturnNull) {
         this.varNameTok = varNameTok;
         this.argNameToks = argNameToks;
         this.bodyNode = bodyNode;
+        this.shouldReturnNull = shouldReturnNull;
 
         if (varNameTok != null) {
             posStart = varNameTok.posStart;

@@ -30,6 +30,7 @@ public class TokenTypes {
     public static final String TT_GTE = "GTE";
     public static final String TT_COMMA = "COMMA";
     public static final String TT_ARROW = "ARROW";
+    public static final String TT_NEWLN = "NEWLN";
     public static final String TT_EOF = "EOF";
 
     private static final String[] KEYWORDS_ARRAY = {
@@ -45,7 +46,8 @@ public class TokenTypes {
             "to",
             "step",
             "while",
-            "func"
+            "func",
+            "end"
     };
     public static final List<String> KEYWORDS = Arrays.asList(KEYWORDS_ARRAY);
 }

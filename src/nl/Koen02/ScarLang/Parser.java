@@ -26,20 +26,62 @@ public class Parser {
 
     public ParseResult advance(ParseResult res) {
         tokIdx++;
-        if (tokIdx < tokens.size()) {
-            curTok = tokens.get(tokIdx);
-        }
-        if (res == null) return new ParseResult();
+        updateCurTok();
+        if (res == null) return null;
         res.regAdvancement();
         return res;
     }
 
+    public void reverse(int amount) {
+        tokIdx -= amount;
+        updateCurTok();
+    }
+
+    public void updateCurTok() {
+        if (tokIdx >= 0 && tokIdx < tokens.size()) {
+            curTok = tokens.get(tokIdx);
+        }
+    }
+
     public ParseResult parse() throws InvalidSyntaxError, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        ParseResult res = expr();
+        ParseResult res = statements();
         if (res.error == null && !curTok.type.equals(TT_EOF)) {
             return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', <=', '>=', 'AND' or 'OR'"));
         }
         return res;
+    }
+
+    public ParseResult statements() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        ArrayList<Node> statements = new ArrayList<>();
+        Position posStart = curTok.posStart.getCopy();
+
+        while (curTok.type.equals(TT_NEWLN)) {
+            res = advance(res);
+        }
+        Node statement = res.register(expr());
+        if (res.error != null) return res;
+        statements.add(statement);
+
+        boolean moreStatements = true;
+        while (true) {
+            int newlines = 0;
+            while (curTok.type.equals(TT_NEWLN)) {
+                res = advance(res);
+                newlines++;
+            }
+            if (newlines == 0) moreStatements = false;
+            if (!moreStatements) break;
+
+            statement = res.tryRegister(expr());
+            if (statement == null) {
+                reverse(res.toReverseCount);
+                moreStatements = false;
+            } else {
+                statements.add(statement);
+            }
+        }
+        return res.success(new ArrayNode(statements, posStart, curTok.posEnd.getCopy()));
     }
 
     public ParseResult expr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -228,38 +270,79 @@ public class Parser {
 
     public ParseResult ifExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ParseResult res = new ParseResult();
+        IfNode allCases = (IfNode) res.register(ifExprCases("if"));
+        if (res.error != null) return res;
+        return res.success(allCases);
+    }
+
+    public ParseResult ifExprCases(String caseKeyword) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
         ArrayList<ArrayList<Node>> cases = new ArrayList<>();
         Node elseCase = null;
+        boolean shouldReturnNull = false;
 
-        if (!curTok.matches(TT_KEYWORD, "if"))
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'if'"));
+        if (!curTok.matches(TT_KEYWORD, caseKeyword))
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, String.format("Expected '%s'", caseKeyword)));
 
-        do {
+        res = advance(res);
+        Node condition = res.register(expr());
+        if (res.error != null) return res;
+
+        if (!curTok.matches(TT_KEYWORD, "then"))
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'then'"));
+        res = advance(res);
+
+        if (curTok.type.equals(TT_NEWLN)) {
             res = advance(res);
-
-            Node condition = res.register(expr());
-            if (res.error != null) return res;
-
-            if (!curTok.matches(TT_KEYWORD, "then"))
-                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'then'"));
-            res = advance(res);
-
-            Node expr = res.register(expr());
+            ArrayNode statements = (ArrayNode) res.register(statements());
             if (res.error != null) return res;
 
             ArrayList<Node> conditionExpressionList = new ArrayList<>();
             conditionExpressionList.add(condition);
+            conditionExpressionList.add(statements);
+            cases.add(conditionExpressionList);
+            shouldReturnNull = true;
+
+            if (curTok.matches(TT_KEYWORD, "end")) {
+                res = advance(res);
+                return res.success(new IfNode(cases, elseCase, shouldReturnNull));
+            }
+        } else {
+            Node expr = res.register(expr());
+            if (res.error != null) return res;
+            ArrayList<Node> conditionExpressionList = new ArrayList<>();
+            conditionExpressionList.add(condition);
             conditionExpressionList.add(expr);
             cases.add(conditionExpressionList);
-        } while (curTok.matches(TT_KEYWORD, "elif"));
-
-        if (curTok.matches(TT_KEYWORD, "else")) {
-            res = advance(res);
-            elseCase = res.register(expr());
-            if (res.error != null) return res;
         }
 
-        return res.success(new IfNode(cases, elseCase));
+        if (curTok.matches(TT_KEYWORD, "elif")) {
+            IfNode allCases = (IfNode) res.register(ifExprCases("elif"));
+            if (res.error != null) return res;
+            elseCase = allCases.elseCase;
+            cases.addAll(allCases.cases);
+        } else if (curTok.matches(TT_KEYWORD, "else")) {
+            res = advance(res);
+            if (curTok.type.equals(TT_NEWLN)) {
+                res = advance(res);
+                ArrayNode statements = (ArrayNode) res.register(statements());
+                if (res.error != null) return res;
+                elseCase = statements;
+                shouldReturnNull = true;
+
+                if (curTok.matches(TT_KEYWORD, "end")) {
+                    res = advance(res);
+                } else {
+                    return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'end'"));
+                }
+            } else {
+                Node expr = res.register(expr());
+                if (res.error != null) return res;
+                elseCase = expr;
+            }
+        }
+
+        return res.success(new IfNode(cases, elseCase, shouldReturnNull));
     }
 
     public ParseResult forExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -305,10 +388,23 @@ public class Parser {
 
         res = advance(res);
 
-        Node body = res.register(expr());
-        if (res.error != null) return res;
+        boolean shouldReturnNull = false;
+        Node body;
+        if (curTok.type.equals(TT_NEWLN)) {
+            res = advance(res);
+            body = res.register(statements());
+            if (res.error != null) return res;
 
-        return res.success(new ForNode(var_name, startValue, endValue, stepValue, body));
+            if (!curTok.matches(TT_KEYWORD, "end"))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'end'"));
+            res = advance(res);
+            shouldReturnNull = true;
+        } else {
+            body = res.register(expr());
+            if (res.error != null) return res;
+        }
+
+        return res.success(new ForNode(var_name, startValue, endValue, stepValue, body, shouldReturnNull));
     }
 
     public ParseResult whileExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -324,10 +420,25 @@ public class Parser {
             return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'then'"));
 
         res = advance(res);
-        Node body = res.register(expr());
-        if (res.error != null) return res;
 
-        return res.success(new WhileNode(condition, body));
+        boolean shouldReturnNull = false;
+        Node body;
+
+        if (curTok.type.equals(TT_NEWLN)) {
+            res = advance(res);
+            body = res.register(statements());
+            if (res.error != null) return res;
+
+            if (!curTok.matches(TT_KEYWORD, "end"))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'end'"));
+            res = advance(res);
+            shouldReturnNull = true;
+        } else {
+            body = res.register(expr());
+            if (res.error != null) return res;
+        }
+
+        return res.success(new WhileNode(condition, body, shouldReturnNull));
     }
 
     public ParseResult funcDef() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -369,15 +480,25 @@ public class Parser {
         }
         res = advance(res);
 
-        if (!curTok.type.equals(TT_ARROW))
-            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '->'"));
+        boolean shouldReturnNull = false;
+        Node body;
+        if (curTok.type.equals(TT_ARROW)) {
+            res = advance(res);
+            body = res.register(expr());
+            if (res.error != null) return res;
+        } else if (curTok.type.equals(TT_NEWLN)) {
+            res = advance(res);
+            body = res.register(statements());
+            if (res.error != null) return res;
+            if (!curTok.matches(TT_KEYWORD, "end"))
+                return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'end'"));
+            res = advance(res);
+            shouldReturnNull = true;
+        } else {
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '->' or newline"));
+        }
 
-        res = advance(res);
-
-        Node nodeToReturn = res.register(expr());
-        if (res.error != null) return res;
-
-        return res.success(new FuncDefNode(varNameTok, argNameToks, nodeToReturn));
+        return res.success(new FuncDefNode(varNameTok, argNameToks, body, shouldReturnNull));
     }
 
     public ParseResult binOpExpr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {

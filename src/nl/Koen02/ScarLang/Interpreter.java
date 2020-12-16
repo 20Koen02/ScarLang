@@ -128,18 +128,26 @@ public class Interpreter {
         return number.setPos(node.posStart, node.posEnd);
     }
 
-    private IntegerType visitIfNode(IfNode node, Context context) throws Exception {
+    private Type visitIfNode(IfNode node, Context context) throws Exception {
         for (ArrayList<Node> condExpr : node.cases) {
             Node condition = condExpr.get(0);
             Node expression = condExpr.get(1);
             IntegerType conditionValue = (IntegerType) visit(condition, context);
-            if (conditionValue.isTrue()) return (IntegerType) visit(expression, context);
+            if (conditionValue.isTrue()) {
+                Type res = visit(expression, context);
+                return node.shouldReturnNull ? IntegerType.zero : res;
+            }
         }
-        if (node.elseCase != null) return (IntegerType) visit(node.elseCase, context);
-        return null;
+        if (node.elseCase != null) {
+            {
+                Type res = visit(node.elseCase, context);
+                return node.shouldReturnNull ? IntegerType.zero : res;
+            }
+        }
+        return IntegerType.zero;
     }
 
-    private ArrayType visitForNode(ForNode node, Context context) throws Exception {
+    private Type visitForNode(ForNode node, Context context) throws Exception {
         ArrayList<Type> elements = new ArrayList<>();
         Type startValue = visit(node.startValueNode, context);
         Type endValue = visit(node.endValueNode, context);
@@ -158,24 +166,24 @@ public class Interpreter {
                 elements.add(visit(node.bodyNode, context));
             }
         }
-        return (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
+        return node.shouldReturnNull ? IntegerType.zero : (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
-    private ArrayType visitWhileNode(WhileNode node, Context context) throws Exception {
+    private Type visitWhileNode(WhileNode node, Context context) throws Exception {
         ArrayList<Type> elements = new ArrayList<>();
         while (true) {
             Type condition = visit(node.conditionNode, context);
             if (!condition.isTrue()) break;
             elements.add(visit(node.bodyNode, context));
         }
-        return (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
+        return node.shouldReturnNull ? IntegerType.zero : (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
     }
 
     private FunctionType visitFuncDefNode(FuncDefNode node, Context context) {
         String funcName = node.varNameTok != null ? node.varNameTok.value : null;
         Node bodyNode = node.bodyNode;
         ArrayList<String> argNames = (ArrayList<String>) node.argNameToks.stream().map(argName -> argName.value).collect(Collectors.toList());
-        FunctionType func_value = (FunctionType) new FunctionType(funcName, bodyNode, argNames).setContext(context).setPos(node.posStart, node.posEnd);
+        FunctionType func_value = (FunctionType) new FunctionType(funcName, bodyNode, argNames, node.shouldReturnNull).setContext(context).setPos(node.posStart, node.posEnd);
 
         if (node.varNameTok != null) context.symbolTable.set(funcName, func_value);
         return func_value;
