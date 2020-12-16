@@ -98,9 +98,9 @@ public class Lexer {
     }
 
     private void skipComment() {
-        advance();
         while (!curChar.equals("\n")) {
             advance();
+            if (curChar == null) break;
         }
         advance();
     }
