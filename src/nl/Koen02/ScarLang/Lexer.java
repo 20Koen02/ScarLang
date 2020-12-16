@@ -35,6 +35,8 @@ public class Lexer {
 
             if (curChar.equals("\t") || curChar.equals(" ")) {
                 advance();
+            } else if (curChar.equals("#")) {
+                skipComment();
             } else if (curChar.equals(";") || curChar.equals("\n")) {
                 tokens.add(new Token(TT_NEWLN, null).setPosStart(pos));
                 advance();
@@ -93,6 +95,14 @@ public class Lexer {
 
         tokens.add(new Token(TT_EOF, null).setPosStart(pos));
         return tokens;
+    }
+
+    private void skipComment() {
+        advance();
+        while (!curChar.equals("\n")) {
+            advance();
+        }
+        advance();
     }
 
     private Token makeNotEquals() throws ExpectedCharError {

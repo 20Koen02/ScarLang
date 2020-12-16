@@ -24,7 +24,7 @@ public class Error extends Exception {
         StringBuilder result = new StringBuilder();
 
         int idxStart = Math.max(text.substring(0, posStart.idx).lastIndexOf("\n"), 0);
-        int idxEnd = text.substring(idxStart + 1).indexOf("\n");
+        int idxEnd = text.indexOf("\n", idxStart + 1);
         if (idxEnd < 0) idxEnd = text.length();
 
         int lineCount = posEnd.ln - posStart.ln + 1;
@@ -36,11 +36,8 @@ public class Error extends Exception {
             result.append(line).append("\n").append(" ".repeat(colStart)).append("^".repeat(colEnd - colStart));
 
             idxStart = idxEnd;
-            if (idxStart + 1 > text.length()) {
-                idxEnd = text.length();
-            } else {
-                idxEnd = text.substring(idxStart + 1).indexOf("\n");
-            }
+            idxEnd = text.indexOf("\n", idxStart + 1);
+            if (idxEnd < 0) idxEnd = text.length();
         }
         return result.toString().replace("\t", "");
     }

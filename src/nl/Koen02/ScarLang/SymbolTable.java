@@ -48,5 +48,7 @@ public class SymbolTable {
         set("append", AppendFunction.getInstance());
         set("extend", ExtendFunction.getInstance());
         set("pop", PopFunction.getInstance());
+        set("run", RunFunction.getInstance());
+        set("length", LengthFunction.getInstance());
     }
 }

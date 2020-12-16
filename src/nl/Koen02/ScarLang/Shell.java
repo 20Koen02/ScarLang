@@ -1,5 +1,6 @@
 package nl.Koen02.ScarLang;
 
+import nl.Koen02.ScarLang.Error.Error;
 import nl.Koen02.ScarLang.Type.ArrayType;
 import java.util.Scanner;
 
@@ -15,7 +16,16 @@ public class Shell {
             String nextLine = stdin.nextLine();
             if (nextLine.strip().equals("")) continue;
             if (nextLine.equals("exit()")) break;
-            ArrayType result = (ArrayType) run("<stdin>", nextLine);
+
+            ArrayType result = null;
+            try {
+                result = (ArrayType) run("<stdin>", nextLine);
+            } catch (Error e) {
+                System.out.println(e.getError());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             if (result == null) continue;
             if (result.elements.size() == 1) {
                 System.out.println(result.elements.get(0).get());
