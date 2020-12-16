@@ -3,7 +3,6 @@ package nl.Koen02.ScarLang;
 import nl.Koen02.ScarLang.Error.RunTimeError;
 import nl.Koen02.ScarLang.Node.*;
 import nl.Koen02.ScarLang.Type.*;
-import nl.Koen02.ScarLang.Type.Function.BaseFunction;
 import nl.Koen02.ScarLang.Type.Function.FunctionType;
 
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 import static nl.Koen02.ScarLang.TokenTypes.*;
 
 public class Interpreter {
-    public Type visit(Node node, Context context) throws Exception {
+    public RunTimeResult visit(Node node, Context context) throws Exception {
         if (node instanceof IntegerNode) {
             return visitIntegerNode((IntegerNode) node, context);
         } else if (node instanceof FloatNode) {
@@ -39,51 +38,66 @@ public class Interpreter {
             return visitStringNode((StringNode) node, context);
         } else if (node instanceof ArrayNode) {
             return visitArrayNode((ArrayNode) node, context);
+        } else if (node instanceof ReturnNode) {
+            return visitReturnNode((ReturnNode) node, context);
+        } else if (node instanceof ContinueNode) {
+            return visitContinueNode();
+        } else if (node instanceof BreakNode) {
+            return visitBreakNode();
         }
         return null;
     }
 
-    public Type visitVarAccessNode(VarAccessNode node, Context context) throws Exception {
+    public RunTimeResult visitVarAccessNode(VarAccessNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
         String varName = node.varNameToken.value;
         Type value = context.symbolTable.get(varName);
 
         if (value == null) throw new RunTimeError(node.posStart, node.posEnd, String.format("'%s' is not defined", varName), context);
 
         value = value.getCopy().setPos(node.posStart, node.posEnd).setContext(context);
-        return value;
+        return res.success(value);
     }
 
-    public Type visitVarAssignNode(VarAssignNode node, Context context) throws Exception {
+    public RunTimeResult visitVarAssignNode(VarAssignNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
         String varName = node.varNameToken.value;
-        Type value = visit(node.valueNode, context);
+        Type value = res.register(visit(node.valueNode, context));
+        if (res.shouldReturn()) return res;
 
         context.symbolTable.set(varName, value);
-        return value;
+        return res.success(value);
     }
 
-    private StringType visitStringNode(StringNode node, Context context) {
-        return (StringType) new StringType(node.tok.value).setContext(context).setPos(node.posStart, node.posEnd);
+    private RunTimeResult visitStringNode(StringNode node, Context context) {
+        return new RunTimeResult().success(new StringType(node.tok.value).setContext(context).setPos(node.posStart, node.posEnd));
     }
 
-    public IntegerType visitIntegerNode(IntegerNode node, Context context) {
-        return (IntegerType) new IntegerType(Integer.parseInt(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd);
+    public RunTimeResult visitIntegerNode(IntegerNode node, Context context) {
+        return new RunTimeResult().success(new IntegerType(Integer.parseInt(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd));
     }
 
-    public FloatType visitFloatNode(FloatNode node, Context context) {
-        return (FloatType) new FloatType(Float.parseFloat(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd);
+    public RunTimeResult visitFloatNode(FloatNode node, Context context) {
+        return new RunTimeResult().success(new FloatType(Float.parseFloat(node.tok.value)).setContext(context).setPos(node.posStart, node.posEnd));
     }
 
-    public ArrayType visitArrayNode(ArrayNode node, Context context) throws Exception {
+    public RunTimeResult visitArrayNode(ArrayNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
         ArrayList<Type> elements = new ArrayList<>();
         for (Node elementNode : node.elementNodes) {
-            elements.add(visit(elementNode, context));
+            elements.add(res.register(visit(elementNode, context)));
+            if (res.shouldReturn()) return res;
         }
-        return (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
+        return res.success(new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd));
     }
 
-    public Type visitBinOpNode(BinOpNode node, Context context) throws Exception {
-        Type left = visit(node.leftNode, context);
-        Type right = visit(node.rightNode, context);
+    public RunTimeResult visitBinOpNode(BinOpNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
+
+        Type left = res.register(visit(node.leftNode, context));
+        if (res.shouldReturn()) return res;
+        Type right = res.register(visit(node.rightNode, context));
+        if (res.shouldReturn()) return res;
 
         Type type = null;
         if (TT_PLUS.equals(node.opTok.type)) {
@@ -115,92 +129,137 @@ public class Interpreter {
         }
 
         if (type == null) return null;
-        return type.setPos(node.posStart, node.posEnd);
+        return res.success(type.setPos(node.posStart, node.posEnd));
     }
 
-    public Type visitUnaryOpNode(UnaryOpNode node, Context context) throws Exception {
-        Type number = visit(node.node, context);
+    public RunTimeResult visitUnaryOpNode(UnaryOpNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
+
+        Type number = res.register(visit(node.node, context));
+        if (res.shouldReturn()) return res;
         if (node.opTok.type.equals(TT_MIN)) {
             number = number.multipliedByMinOne();
         } else if (node.opTok.matches(TT_KEYWORD, "not")) {
             number = number.notOperated();
         }
-        return number.setPos(node.posStart, node.posEnd);
+        return res.success(number.setPos(node.posStart, node.posEnd));
     }
 
-    private Type visitIfNode(IfNode node, Context context) throws Exception {
+    private RunTimeResult visitIfNode(IfNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
+
         for (ArrayList<Node> condExpr : node.cases) {
             Node condition = condExpr.get(0);
             Node expression = condExpr.get(1);
-            IntegerType conditionValue = (IntegerType) visit(condition, context);
+            Type conditionValue = res.register(visit(condition, context));
+            if (res.shouldReturn()) return res;
             if (conditionValue.isTrue()) {
-                Type res = visit(expression, context);
-                return node.shouldReturnNull ? IntegerType.zero : res;
+                Type v = res.register(visit(expression, context));
+                if (res.shouldReturn()) return res;
+                return res.success(node.shouldReturnNull ? IntegerType.zero : v);
             }
         }
         if (node.elseCase != null) {
             {
-                Type res = visit(node.elseCase, context);
-                return node.shouldReturnNull ? IntegerType.zero : res;
+                Type v = res.register(visit(node.elseCase, context));
+                if (res.shouldReturn()) return res;
+                return res.success(node.shouldReturnNull ? IntegerType.zero : v);
             }
         }
-        return IntegerType.zero;
+        return res.success(IntegerType.zero);
     }
 
-    private Type visitForNode(ForNode node, Context context) throws Exception {
+    private RunTimeResult visitForNode(ForNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
+
         ArrayList<Type> elements = new ArrayList<>();
-        Type startValue = visit(node.startValueNode, context);
-        Type endValue = visit(node.endValueNode, context);
-        Type stepValue = visit(node.stepValueNode, context);
+        Type startValue = res.register(visit(node.startValueNode, context));
+        if (res.shouldReturn()) return res;
+        Type endValue = res.register(visit(node.endValueNode, context));
+        if (res.shouldReturn()) return res;
+        Type stepValue = res.register(visit(node.stepValueNode, context));
 
-        if (stepValue.isPositive()) {
-            while (startValue.getComparisonLt(endValue).isTrue()) {
-                context.symbolTable.set(node.varNameTok.value, startValue.getCopy());
-                startValue = startValue.addedTo(stepValue);
-                elements.add(visit(node.bodyNode, context));
-            }
-        } else {
-            while (startValue.getComparisonGt(endValue).isTrue()) {
-                context.symbolTable.set(node.varNameTok.value, startValue.getCopy());
-                startValue = startValue.addedTo(stepValue);
-                elements.add(visit(node.bodyNode, context));
-            }
+        while (stepValue.isPositive() ? startValue.getComparisonLt(endValue).isTrue() : startValue.getComparisonGt(endValue).isTrue()) {
+            context.symbolTable.set(node.varNameTok.value, startValue.getCopy());
+            startValue = startValue.addedTo(stepValue);
+
+            Type value = res.register(visit(node.bodyNode, context));
+            if (res.shouldReturn() && !res.loopShouldContinue && !res.loopShouldBreak) return res;
+            if (res.loopShouldContinue) continue;
+            if (res.loopShouldBreak) break;
+            elements.add(value);
         }
-        return node.shouldReturnNull ? IntegerType.zero : (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
+
+        return res.success(node.shouldReturnNull ? IntegerType.zero : new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd));
     }
 
-    private Type visitWhileNode(WhileNode node, Context context) throws Exception {
+    private RunTimeResult visitWhileNode(WhileNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
+
         ArrayList<Type> elements = new ArrayList<>();
         while (true) {
-            Type condition = visit(node.conditionNode, context);
+            Type condition = res.register(visit(node.conditionNode, context));
+            if (res.shouldReturn()) return res;
             if (!condition.isTrue()) break;
-            elements.add(visit(node.bodyNode, context));
+
+            Type value = res.register(visit(node.bodyNode, context));
+            if (res.shouldReturn() && !res.loopShouldContinue && !res.loopShouldBreak) return res;
+            if (res.loopShouldContinue) continue;
+            if (res.loopShouldBreak) break;
+            elements.add(value);
         }
-        return node.shouldReturnNull ? IntegerType.zero : (ArrayType) new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd);
+        return res.success(node.shouldReturnNull ? IntegerType.zero : new ArrayType(elements).setContext(context).setPos(node.posStart, node.posEnd));
     }
 
-    private FunctionType visitFuncDefNode(FuncDefNode node, Context context) {
+    private RunTimeResult visitFuncDefNode(FuncDefNode node, Context context) {
+        RunTimeResult res = new RunTimeResult();
+
         String funcName = node.varNameTok != null ? node.varNameTok.value : null;
         Node bodyNode = node.bodyNode;
         ArrayList<String> argNames = (ArrayList<String>) node.argNameToks.stream().map(argName -> argName.value).collect(Collectors.toList());
-        FunctionType func_value = (FunctionType) new FunctionType(funcName, bodyNode, argNames, node.shouldReturnNull).setContext(context).setPos(node.posStart, node.posEnd);
+        FunctionType func_value = (FunctionType) new FunctionType(funcName, bodyNode, argNames, node.shouldAutoReturn).setContext(context).setPos(node.posStart, node.posEnd);
 
         if (node.varNameTok != null) context.symbolTable.set(funcName, func_value);
-        return func_value;
+        return res.success(func_value);
     }
 
-    private Type visitCallNode(CallNode node, Context context) throws Exception {
+    private RunTimeResult visitCallNode(CallNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
+
         ArrayList<Type> args = new ArrayList<>();
-        BaseFunction valueToCall = (BaseFunction) visit(node.nodeToCall, context);
-        valueToCall = (BaseFunction) valueToCall.getCopy().setPos(node.posStart, node.posEnd);
+        Type valueToCall = res.register(visit(node.nodeToCall, context));
+        if (res.shouldReturn()) return res;
+        valueToCall = valueToCall.getCopy().setPos(node.posStart, node.posEnd);
 
         for (Node argNode : node.argNodes) {
-            args.add(visit(argNode, context));
+            args.add(res.register(visit(argNode, context)));
+            if (res.shouldReturn()) return res;
         }
 
-        Type ret = valueToCall.execute(args);
-        ret.getCopy().setPos(node.posStart, node.posEnd).setContext(context);
+        Type ret = res.register(valueToCall.execute(args));
+        if (res.shouldReturn()) return res;
+        ret = ret.getCopy().setPos(node.posStart, node.posEnd).setContext(context);
 
-        return ret;
+        return res.success(ret);
+    }
+
+    private RunTimeResult visitReturnNode(ReturnNode node, Context context) throws Exception {
+        RunTimeResult res = new RunTimeResult();
+
+        Type value;
+        if (node.nodeToReturn != null) {
+            value = res.register(visit(node.nodeToReturn, context));
+        } else {
+            value = IntegerType.zero;
+        }
+        return res.successReturn(value);
+    }
+
+    private RunTimeResult visitContinueNode() {
+        return new RunTimeResult().successContinue();
+    }
+
+    private RunTimeResult visitBreakNode() {
+        return new RunTimeResult().successBreak();
     }
 }

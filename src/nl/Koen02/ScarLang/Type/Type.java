@@ -3,6 +3,7 @@ package nl.Koen02.ScarLang.Type;
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.RunTimeError;
 import nl.Koen02.ScarLang.Position;
+import nl.Koen02.ScarLang.RunTimeResult;
 
 import java.util.ArrayList;
 
@@ -82,7 +83,7 @@ public class Type {
         throw illegalOperation(null);
     }
 
-    public Type execute(ArrayList<Type> args) throws Exception {
+    public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         throw illegalOperation(null);
     }
 

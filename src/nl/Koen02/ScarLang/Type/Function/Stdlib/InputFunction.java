@@ -1,6 +1,7 @@
 package nl.Koen02.ScarLang.Type.Function.Stdlib;
 
 import nl.Koen02.ScarLang.Context;
+import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
 import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.StringType;
@@ -18,13 +19,13 @@ public final class InputFunction extends BaseFunction {
         super(name);
     }
 
-    public Type execute(ArrayList<Type> args) throws Exception {
+    public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
 
         Scanner stdin = new Scanner(System.in);
         String inp = stdin.nextLine();
-        return new StringType(inp);
+        return new RunTimeResult().success(new StringType(inp));
     }
 
     public BaseFunction getCopy() {

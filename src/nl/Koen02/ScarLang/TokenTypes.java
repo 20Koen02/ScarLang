@@ -47,7 +47,10 @@ public class TokenTypes {
             "step",
             "while",
             "func",
-            "end"
+            "end",
+            "return",
+            "continue",
+            "break"
     };
     public static final List<String> KEYWORDS = Arrays.asList(KEYWORDS_ARRAY);
 }

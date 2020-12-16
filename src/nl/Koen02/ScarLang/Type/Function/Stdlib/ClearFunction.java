@@ -2,6 +2,7 @@ package nl.Koen02.ScarLang.Type.Function.Stdlib;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.RunTimeError;
+import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
 import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.StringType;
@@ -18,7 +19,7 @@ public final class ClearFunction extends BaseFunction {
         super(name);
     }
 
-    public Type execute(ArrayList<Type> args) throws Exception {
+    public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
         try {
@@ -26,7 +27,7 @@ public final class ClearFunction extends BaseFunction {
         } catch (Exception e) {
             throw new RunTimeError(posStart, posEnd, "Screen clearing is not supported", context);
         }
-        return IntegerType.zero;
+        return new RunTimeResult().success(IntegerType.zero);
     }
 
     public BaseFunction getCopy() {

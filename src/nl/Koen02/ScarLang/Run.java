@@ -28,7 +28,9 @@ public class Run {
             if (context.symbolTable == null) context.symbolTable = globalSymbolTable;
 
             // Log Output
-            return interpreter.visit(ast.node, context);
+            RunTimeResult res = interpreter.visit(ast.node, context);
+            if (res.error != null) throw res.error;
+            return res.value;
         } catch (Error e) {
             System.out.println(e.getError());
         } catch (Exception e) {

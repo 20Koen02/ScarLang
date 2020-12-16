@@ -1,6 +1,7 @@
 package nl.Koen02.ScarLang.Type.Function.Stdlib;
 
 import nl.Koen02.ScarLang.Context;
+import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.Type.FloatType;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
 import nl.Koen02.ScarLang.Type.IntegerType;
@@ -18,11 +19,11 @@ public final class IsFloatFunction extends BaseFunction {
         Collections.addAll(argNames, "value");
     }
 
-    public Type execute(ArrayList<Type> args) throws Exception {
+    public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
 
-        return execContext.symbolTable.get("value") instanceof FloatType ? IntegerType.one : IntegerType.zero;
+        return new RunTimeResult().success(execContext.symbolTable.get("value") instanceof FloatType ? IntegerType.one : IntegerType.zero);
     }
 
     public BaseFunction getCopy() {

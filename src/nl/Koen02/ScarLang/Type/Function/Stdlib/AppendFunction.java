@@ -2,7 +2,9 @@ package nl.Koen02.ScarLang.Type.Function.Stdlib;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.RunTimeError;
+import nl.Koen02.ScarLang.ParseResult;
 import nl.Koen02.ScarLang.Run;
+import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.Type.ArrayType;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
 import nl.Koen02.ScarLang.Type.IntegerType;
@@ -20,7 +22,7 @@ public final class AppendFunction extends BaseFunction {
         Collections.addAll(argNames, "array", "value");
     }
 
-    public Type execute(ArrayList<Type> args) throws Exception {
+    public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
 
@@ -31,7 +33,7 @@ public final class AppendFunction extends BaseFunction {
             throw new RunTimeError(posStart, posEnd, "First argument must be of type array", execContext);
 
         ((ArrayType) array).addedTo(value);
-        return IntegerType.zero;
+        return new RunTimeResult().success(IntegerType.zero);
     }
 
     public BaseFunction getCopy() {

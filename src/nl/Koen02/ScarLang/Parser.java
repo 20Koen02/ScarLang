@@ -59,7 +59,7 @@ public class Parser {
         while (curTok.type.equals(TT_NEWLN)) {
             res = advance(res);
         }
-        Node statement = res.register(expr());
+        Node statement = res.register(statement());
         if (res.error != null) return res;
         statements.add(statement);
 
@@ -73,7 +73,7 @@ public class Parser {
             if (newlines == 0) moreStatements = false;
             if (!moreStatements) break;
 
-            statement = res.tryRegister(expr());
+            statement = res.tryRegister(statement());
             if (statement == null) {
                 reverse(res.toReverseCount);
                 moreStatements = false;
@@ -82,6 +82,30 @@ public class Parser {
             }
         }
         return res.success(new ArrayNode(statements, posStart, curTok.posEnd.getCopy()));
+    }
+
+    public ParseResult statement() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ParseResult res = new ParseResult();
+        Position posStart = curTok.posStart.getCopy();
+        if (curTok.matches(TT_KEYWORD, "return")) {
+            res = advance(res);
+            Node expr = res.tryRegister(expr());
+            if (expr == null) reverse(res.toReverseCount);
+            return res.success(new ReturnNode(expr, posStart, curTok.posStart.getCopy()));
+        }
+        if (curTok.matches(TT_KEYWORD, "continue")) {
+            res = advance(res);
+            return res.success(new ContinueNode(posStart, curTok.posStart.getCopy()));
+        }
+        if (curTok.matches(TT_KEYWORD, "break")) {
+            res = advance(res);
+            return res.success(new BreakNode(posStart, curTok.posStart.getCopy()));
+        }
+        Node expr = res.register(expr());
+        if (res.error != null)
+            return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd,
+                    "Expected 'return', 'continue', 'break', 'var', 'if', 'for', 'while', 'func', int, float, identifier, '+', '-', '(', '[' or 'not'"));
+        return res.success(expr);
     }
 
     public ParseResult expr() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -308,7 +332,7 @@ public class Parser {
                 return res.success(new IfNode(cases, elseCase, shouldReturnNull));
             }
         } else {
-            Node expr = res.register(expr());
+            Node expr = res.register(statement());
             if (res.error != null) return res;
             ArrayList<Node> conditionExpressionList = new ArrayList<>();
             conditionExpressionList.add(condition);
@@ -336,7 +360,7 @@ public class Parser {
                     return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'end'"));
                 }
             } else {
-                Node expr = res.register(expr());
+                Node expr = res.register(statement());
                 if (res.error != null) return res;
                 elseCase = expr;
             }
@@ -380,7 +404,7 @@ public class Parser {
             return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'step'"));
 
         res = advance(res);
-        Node stepValue = res.register(expr());
+        Node stepValue = res.register(statement());
         if (res.error != null) return res;
 
         if (!curTok.matches(TT_KEYWORD, "then"))
@@ -434,7 +458,7 @@ public class Parser {
             res = advance(res);
             shouldReturnNull = true;
         } else {
-            body = res.register(expr());
+            body = res.register(statement());
             if (res.error != null) return res;
         }
 
@@ -486,6 +510,7 @@ public class Parser {
             res = advance(res);
             body = res.register(expr());
             if (res.error != null) return res;
+            shouldReturnNull = true;
         } else if (curTok.type.equals(TT_NEWLN)) {
             res = advance(res);
             body = res.register(statements());
@@ -493,7 +518,6 @@ public class Parser {
             if (!curTok.matches(TT_KEYWORD, "end"))
                 return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected 'end'"));
             res = advance(res);
-            shouldReturnNull = true;
         } else {
             return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '->' or newline"));
         }

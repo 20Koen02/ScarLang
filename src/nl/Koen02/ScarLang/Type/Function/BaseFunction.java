@@ -3,6 +3,7 @@ package nl.Koen02.ScarLang.Type.Function;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.RunTimeError;
+import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.SymbolTable;
 import nl.Koen02.ScarLang.Type.Type;
 
