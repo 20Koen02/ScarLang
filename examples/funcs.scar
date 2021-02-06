@@ -1,0 +1,19 @@
+# run("examples/funcs.scar")
+
+func function(prefix) -> prefix + "!"
+print(function("First"))
+
+func multilineFunction(prefix) {
+    return prefix + "!"
+}
+print(multilineFunction("Second"))
+
+var anonymousFunction = func(prefix) -> prefix + "!"
+print(anonymousFunction("Third"))
+
+var anonymousMultilineFunction = func(prefix) {
+    return prefix + "!"
+}
+print(anonymousMultilineFunction("Fourth"))
+
+print(isFunction(multilineFunction))
