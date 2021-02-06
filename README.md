@@ -7,4 +7,5 @@ Programming Language made in Java
 
 ## Todo
 - `isTrue()` built-in function
-
+- CLI Tool
+- Online Interpreter Webapp
