@@ -1,0 +1,5 @@
+# run("examples/all.scar")
+
+run("examples/funcs.scar")
+run("examples/ifelse.scar")
+run("examples/loops.scar")
