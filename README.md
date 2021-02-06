@@ -7,5 +7,6 @@ Programming Language made in Java
 
 ## Todo
 - `isTrue()` built-in function
+- `import x from "path/to/y"` statement for importing functions and variables
 - CLI Tool
 - Online Interpreter Webapp
