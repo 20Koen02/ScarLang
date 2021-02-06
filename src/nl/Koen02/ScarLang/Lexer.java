@@ -72,6 +72,12 @@ public class Lexer {
             } else if (curChar.equals("]")) {
                 tokens.add(new Token(TT_RSQUARE, null).setPosStart(pos));
                 advance();
+            } else if (curChar.equals("{")) {
+                tokens.add(new Token(TT_LCURL, null).setPosStart(pos));
+                advance();
+            } else if (curChar.equals("}")) {
+                tokens.add(new Token(TT_RCURL, null).setPosStart(pos));
+                advance();
             } else if (curChar.equals("!")) {
                 tokens.add(makeNotEquals());
             } else if (curChar.equals("=")) {
@@ -111,7 +117,7 @@ public class Lexer {
 
         if (curChar.equals("=")) {
             advance();
-            return new Token(TT_NE, null).setPosStart(posStart).setPosEnd(pos);
+            return new Token(TT_NE, null).setPosStart(posStart).setPosEnd(pos.getCopy());
         }
 
         advance();
@@ -128,7 +134,7 @@ public class Lexer {
             tokenType = isEq;
         }
 
-        return new Token(tokenType, null).setPosStart(posStart).setPosEnd(pos);
+        return new Token(tokenType, null).setPosStart(posStart).setPosEnd(pos.getCopy());
     }
 
     private Token makeIdentifier() {
@@ -142,7 +148,7 @@ public class Lexer {
         String idStr = idStrBuild.toString();
 
         String tokType = KEYWORDS.contains(idStr) ? TT_KEYWORD : TT_IDENTIFIER;
-        return new Token(tokType, idStr).setPosStart(posStart).setPosEnd(pos);
+        return new Token(tokType, idStr).setPosStart(posStart).setPosEnd(pos.getCopy());
     }
 
     private Token makeNumber() {
@@ -183,6 +189,6 @@ public class Lexer {
             advance();
         }
         advance();
-        return new Token(TT_STRING, string.toString()).setPosStart(posStart).setPosEnd(pos);
+        return new Token(TT_STRING, string.toString()).setPosStart(posStart).setPosEnd(pos.getCopy());
     }
 }

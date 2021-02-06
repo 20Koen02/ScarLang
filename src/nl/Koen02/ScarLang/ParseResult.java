@@ -5,6 +5,7 @@ import nl.Koen02.ScarLang.Node.Node;
 
 public class ParseResult {
     Error error = null;
+    Error statementError = null;
     Node node = null;
     Integer advanceCount = 0;
     Integer toReverseCount = 0;

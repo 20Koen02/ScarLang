@@ -15,7 +15,7 @@ public class Error extends Exception {
 
     public String getError() {
         String result = String.format("%s: %s", errorName, details);
-        result += String.format("\n\tFile %s, line %s, column %s", posStart.fn, posStart.ln, posStart.col);
+        result += String.format("\n\tFile %s, line %s, column %s", posStart.fn, posStart.ln + 1, posStart.col + 1);
         result += "\n\n" + Error.stringWithArrows(posStart.ftxt, posStart, posEnd);
         return result;
     }

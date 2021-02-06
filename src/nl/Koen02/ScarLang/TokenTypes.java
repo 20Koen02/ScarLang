@@ -22,6 +22,8 @@ public class TokenTypes {
     public static final String TT_RPAR = "RPAR";
     public static final String TT_LSQUARE = "LSQUARE";
     public static final String TT_RSQUARE = "RSQUARE";
+    public static final String TT_LCURL = "LCURL";
+    public static final String TT_RCURL= "RCURL";
     public static final String TT_EE = "EE";
     public static final String TT_NE = "NE";
     public static final String TT_LT = "LT";

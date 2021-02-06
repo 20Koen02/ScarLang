@@ -1,0 +1,25 @@
+# run("examples/loops.scar")
+
+# Single line for loop
+var result = 1
+for (i = 1 to 6 step 1) -> var result = result * i
+print(result)  # 120
+
+# Multi line for loop
+var result = 1
+for (i = 1 to 6 step 1) {
+    var result = result * i
+}
+print(result)  # 120
+
+# Single line while loop
+var i = 1000
+while (i > 0) -> var i = i - 1
+print(i)  # 0
+
+# Multi line while loop
+var i = 1000
+while (i > 0) {
+    var i = i - 1
+}
+print(i)  # 0

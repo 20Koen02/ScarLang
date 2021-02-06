@@ -1,0 +1,23 @@
+# run("examples/ifelse.scar")
+
+var condition1 = 1
+
+if (condition1) {
+    var condition1 = 0
+}
+
+if (condition1) {
+    var condition2 = 0
+} else {
+    var condition2 = 1
+}
+
+if (condition1) {
+    print("condition 1")
+} elif (condition2) {
+    print("condition 2")
+} else {
+    print("none")
+}
+
+if (5 == 5) -> print("5 is 5!")
