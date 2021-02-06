@@ -1,4 +1,4 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.RunTimeError;
@@ -11,13 +11,13 @@ import nl.Koen02.ScarLang.Type.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public final class LengthFunction extends BaseFunction {
-    private static LengthFunction INSTANCE;
+public final class ExtendFunction extends BaseFunction {
+    private static ExtendFunction INSTANCE;
     private final ArrayList<String> argNames = new ArrayList<>();
 
-    private LengthFunction(String name) {
+    private ExtendFunction(String name) {
         super(name);
-        Collections.addAll(argNames, "array");
+        Collections.addAll(argNames, "array", "secondArray");
     }
 
     public RunTimeResult execute(ArrayList<Type> args) throws Exception {
@@ -25,24 +25,27 @@ public final class LengthFunction extends BaseFunction {
         checkAndPopulate(argNames, args, execContext);
 
         Type array = execContext.symbolTable.get("array");
+        Type secondArray = execContext.symbolTable.get("secondArray");
 
         if (!(array instanceof ArrayType))
             throw new RunTimeError(posStart, posEnd, "First argument must be of type array", execContext);
+        if (!(secondArray instanceof ArrayType))
+            throw new RunTimeError(posStart, posEnd, "Second argument must be of type array", execContext);
 
-
-        return new RunTimeResult().success(new IntegerType(((ArrayType) array).elements.size()));
+        ((ArrayType) array).multipliedBy(secondArray);
+        return new RunTimeResult().success(IntegerType.zero);
     }
 
     public BaseFunction getCopy() {
-        LengthFunction copy = new LengthFunction(name);
+        ExtendFunction copy = new ExtendFunction(name);
         copy.setContext(context);
         copy.setPos(posStart, posEnd);
         return copy;
     }
 
-    public static LengthFunction getInstance() {
+    public static ExtendFunction getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new LengthFunction("length");
+            INSTANCE = new ExtendFunction("extend");
         }
         return INSTANCE;
     }

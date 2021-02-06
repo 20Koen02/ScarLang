@@ -1,43 +1,41 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.RunTimeResult;
+import nl.Koen02.ScarLang.Type.FloatType;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
 import nl.Koen02.ScarLang.Type.IntegerType;
-import nl.Koen02.ScarLang.Type.StringType;
 import nl.Koen02.ScarLang.Type.Type;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Scanner;
 
-public final class InputFunction extends BaseFunction {
-    private static InputFunction INSTANCE;
+public final class IsFloatFunction extends BaseFunction {
+    private static IsFloatFunction INSTANCE;
     private final ArrayList<String> argNames = new ArrayList<>();
 
-    private InputFunction(String name) {
+    private IsFloatFunction(String name) {
         super(name);
+        Collections.addAll(argNames, "value");
     }
 
     public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
 
-        Scanner stdin = new Scanner(System.in);
-        String inp = stdin.nextLine();
-        return new RunTimeResult().success(new StringType(inp));
+        return new RunTimeResult().success(execContext.symbolTable.get("value") instanceof FloatType ? IntegerType.one : IntegerType.zero);
     }
 
     public BaseFunction getCopy() {
-        InputFunction copy = new InputFunction(name);
+        IsFloatFunction copy = new IsFloatFunction(name);
         copy.setContext(context);
         copy.setPos(posStart, posEnd);
         return copy;
     }
 
-    public static InputFunction getInstance() {
+    public static IsFloatFunction getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new InputFunction("input");
+            INSTANCE = new IsFloatFunction("isFloat");
         }
         return INSTANCE;
     }

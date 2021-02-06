@@ -1,4 +1,4 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.RunTimeError;
@@ -11,13 +11,13 @@ import nl.Koen02.ScarLang.Type.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public final class PopFunction extends BaseFunction {
-    private static PopFunction INSTANCE;
+public final class LengthFunction extends BaseFunction {
+    private static LengthFunction INSTANCE;
     private final ArrayList<String> argNames = new ArrayList<>();
 
-    private PopFunction(String name) {
+    private LengthFunction(String name) {
         super(name);
-        Collections.addAll(argNames, "array", "value");
+        Collections.addAll(argNames, "array");
     }
 
     public RunTimeResult execute(ArrayList<Type> args) throws Exception {
@@ -25,25 +25,24 @@ public final class PopFunction extends BaseFunction {
         checkAndPopulate(argNames, args, execContext);
 
         Type array = execContext.symbolTable.get("array");
-        Type value = execContext.symbolTable.get("value");
 
         if (!(array instanceof ArrayType))
             throw new RunTimeError(posStart, posEnd, "First argument must be of type array", execContext);
 
-        ((ArrayType) array).subtractedBy(value);
-        return new RunTimeResult().success(IntegerType.zero);
+
+        return new RunTimeResult().success(new IntegerType(((ArrayType) array).elements.size()));
     }
 
     public BaseFunction getCopy() {
-        PopFunction copy = new PopFunction(name);
+        LengthFunction copy = new LengthFunction(name);
         copy.setContext(context);
         copy.setPos(posStart, posEnd);
         return copy;
     }
 
-    public static PopFunction getInstance() {
+    public static LengthFunction getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new PopFunction("pop");
+            INSTANCE = new LengthFunction("length");
         }
         return INSTANCE;
     }

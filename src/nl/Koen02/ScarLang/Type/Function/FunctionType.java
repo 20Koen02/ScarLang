@@ -3,9 +3,7 @@ package nl.Koen02.ScarLang.Type.Function;
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Interpreter;
 import nl.Koen02.ScarLang.Node.Node;
-import nl.Koen02.ScarLang.Run;
 import nl.Koen02.ScarLang.RunTimeResult;
-import nl.Koen02.ScarLang.Type.Function.Stdlib.PrintFunction;
 import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.Type;
 

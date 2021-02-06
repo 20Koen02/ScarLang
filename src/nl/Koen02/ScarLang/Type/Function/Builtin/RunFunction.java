@@ -1,11 +1,9 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.Error;
 import nl.Koen02.ScarLang.Error.RunTimeError;
-import nl.Koen02.ScarLang.Run;
 import nl.Koen02.ScarLang.RunTimeResult;
-import nl.Koen02.ScarLang.Type.ArrayType;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
 import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.StringType;

@@ -1,4 +1,4 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.Error.RunTimeError;
@@ -11,13 +11,13 @@ import nl.Koen02.ScarLang.Type.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public final class ExtendFunction extends BaseFunction {
-    private static ExtendFunction INSTANCE;
+public final class AppendFunction extends BaseFunction {
+    private static AppendFunction INSTANCE;
     private final ArrayList<String> argNames = new ArrayList<>();
 
-    private ExtendFunction(String name) {
+    private AppendFunction(String name) {
         super(name);
-        Collections.addAll(argNames, "array", "secondArray");
+        Collections.addAll(argNames, "array", "value");
     }
 
     public RunTimeResult execute(ArrayList<Type> args) throws Exception {
@@ -25,27 +25,25 @@ public final class ExtendFunction extends BaseFunction {
         checkAndPopulate(argNames, args, execContext);
 
         Type array = execContext.symbolTable.get("array");
-        Type secondArray = execContext.symbolTable.get("secondArray");
+        Type value = execContext.symbolTable.get("value");
 
         if (!(array instanceof ArrayType))
             throw new RunTimeError(posStart, posEnd, "First argument must be of type array", execContext);
-        if (!(secondArray instanceof ArrayType))
-            throw new RunTimeError(posStart, posEnd, "Second argument must be of type array", execContext);
 
-        ((ArrayType) array).multipliedBy(secondArray);
+        ((ArrayType) array).addedTo(value);
         return new RunTimeResult().success(IntegerType.zero);
     }
 
     public BaseFunction getCopy() {
-        ExtendFunction copy = new ExtendFunction(name);
+        AppendFunction copy = new AppendFunction(name);
         copy.setContext(context);
         copy.setPos(posStart, posEnd);
         return copy;
     }
 
-    public static ExtendFunction getInstance() {
+    public static AppendFunction getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new ExtendFunction("extend");
+            INSTANCE = new AppendFunction("append");
         }
         return INSTANCE;
     }

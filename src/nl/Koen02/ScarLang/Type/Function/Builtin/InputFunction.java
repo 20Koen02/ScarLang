@@ -1,45 +1,41 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
-import nl.Koen02.ScarLang.Error.RunTimeError;
 import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
-import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.StringType;
 import nl.Koen02.ScarLang.Type.Type;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public final class ClearFunction extends BaseFunction {
-    private static ClearFunction INSTANCE;
+public final class InputFunction extends BaseFunction {
+    private static InputFunction INSTANCE;
     private final ArrayList<String> argNames = new ArrayList<>();
 
-    private ClearFunction(String name) {
+    private InputFunction(String name) {
         super(name);
     }
 
     public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
-        try {
-            Runtime.getRuntime().exec(System.getProperty("os.name").contains("Windows") ? "cls" : "clear");
-        } catch (Exception e) {
-            throw new RunTimeError(posStart, posEnd, "Screen clearing is not supported", context);
-        }
-        return new RunTimeResult().success(IntegerType.zero);
+
+        Scanner stdin = new Scanner(System.in);
+        String inp = stdin.nextLine();
+        return new RunTimeResult().success(new StringType(inp));
     }
 
     public BaseFunction getCopy() {
-        ClearFunction copy = new ClearFunction(name);
+        InputFunction copy = new InputFunction(name);
         copy.setContext(context);
         copy.setPos(posStart, posEnd);
         return copy;
     }
 
-    public static ClearFunction getInstance() {
+    public static InputFunction getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new ClearFunction("clear");
+            INSTANCE = new InputFunction("input");
         }
         return INSTANCE;
     }

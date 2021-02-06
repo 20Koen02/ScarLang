@@ -1,7 +1,7 @@
 package nl.Koen02.ScarLang;
 
 import nl.Koen02.ScarLang.Type.FloatType;
-import nl.Koen02.ScarLang.Type.Function.Stdlib.*;
+import nl.Koen02.ScarLang.Type.Function.Builtin.*;
 import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.Type;
 

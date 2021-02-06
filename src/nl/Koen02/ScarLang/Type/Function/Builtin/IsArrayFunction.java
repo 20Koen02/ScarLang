@@ -1,21 +1,20 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.Type.ArrayType;
 import nl.Koen02.ScarLang.Type.Function.BaseFunction;
-import nl.Koen02.ScarLang.Type.Function.FunctionType;
 import nl.Koen02.ScarLang.Type.IntegerType;
 import nl.Koen02.ScarLang.Type.Type;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public final class IsFunctionFunction extends BaseFunction {
-    private static IsFunctionFunction INSTANCE;
+public final class IsArrayFunction extends BaseFunction {
+    private static IsArrayFunction INSTANCE;
     private final ArrayList<String> argNames = new ArrayList<>();
 
-    private IsFunctionFunction(String name) {
+    private IsArrayFunction(String name) {
         super(name);
         Collections.addAll(argNames, "value");
     }
@@ -24,19 +23,19 @@ public final class IsFunctionFunction extends BaseFunction {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
 
-        return new RunTimeResult().success(execContext.symbolTable.get("value") instanceof BaseFunction ? IntegerType.one : IntegerType.zero);
+        return new RunTimeResult().success(execContext.symbolTable.get("value") instanceof ArrayType ? IntegerType.one : IntegerType.zero);
     }
 
     public BaseFunction getCopy() {
-        IsFunctionFunction copy = new IsFunctionFunction(name);
+        IsArrayFunction copy = new IsArrayFunction(name);
         copy.setContext(context);
         copy.setPos(posStart, posEnd);
         return copy;
     }
 
-    public static IsFunctionFunction getInstance() {
+    public static IsArrayFunction getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new IsFunctionFunction("isFunction");
+            INSTANCE = new IsArrayFunction("isArray");
         }
         return INSTANCE;
     }

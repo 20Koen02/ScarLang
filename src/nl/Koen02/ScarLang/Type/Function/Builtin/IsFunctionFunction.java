@@ -1,4 +1,4 @@
-package nl.Koen02.ScarLang.Type.Function.Stdlib;
+package nl.Koen02.ScarLang.Type.Function.Builtin;
 
 import nl.Koen02.ScarLang.Context;
 import nl.Koen02.ScarLang.RunTimeResult;
@@ -9,11 +9,11 @@ import nl.Koen02.ScarLang.Type.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public final class IsIntegerFunction extends BaseFunction {
-    private static IsIntegerFunction INSTANCE;
+public final class IsFunctionFunction extends BaseFunction {
+    private static IsFunctionFunction INSTANCE;
     private final ArrayList<String> argNames = new ArrayList<>();
 
-    private IsIntegerFunction(String name) {
+    private IsFunctionFunction(String name) {
         super(name);
         Collections.addAll(argNames, "value");
     }
@@ -22,19 +22,19 @@ public final class IsIntegerFunction extends BaseFunction {
         Context execContext = genNewContext();
         checkAndPopulate(argNames, args, execContext);
 
-        return new RunTimeResult().success(execContext.symbolTable.get("value") instanceof IntegerType ? IntegerType.one : IntegerType.zero);
+        return new RunTimeResult().success(execContext.symbolTable.get("value") instanceof BaseFunction ? IntegerType.one : IntegerType.zero);
     }
 
     public BaseFunction getCopy() {
-        IsIntegerFunction copy = new IsIntegerFunction(name);
+        IsFunctionFunction copy = new IsFunctionFunction(name);
         copy.setContext(context);
         copy.setPos(posStart, posEnd);
         return copy;
     }
 
-    public static IsIntegerFunction getInstance() {
+    public static IsFunctionFunction getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new IsIntegerFunction("isInteger");
+            INSTANCE = new IsFunctionFunction("isFunction");
         }
         return INSTANCE;
     }
