@@ -106,6 +106,8 @@ public class Interpreter {
             type = left.subtractedBy(right);
         } else if (TT_MUL.equals(node.opTok.type)) {
             type = left.multipliedBy(right);
+        } else if (TT_MOD.equals(node.opTok.type)) {
+            type = left.moduloBy(right);
         } else if (TT_DIV.equals(node.opTok.type)) {
             type = left.dividedBy(right);
         } else if (TT_POW.equals(node.opTok.type)) {

@@ -162,7 +162,7 @@ public class Parser {
     }
 
     public ParseResult term() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        String[] binOps = {TT_MUL, TT_DIV};
+        String[] binOps = {TT_MUL, TT_MOD, TT_DIV};
         return binOp(this.getClass().getMethod("factor"), null, Arrays.asList(binOps));
     }
 

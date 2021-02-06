@@ -1,0 +1,16 @@
+# run("examples/check_palindrome.scar")
+# This function checks if a number is a palindrome
+
+func isPalindrome(num) {
+    var reversed = 0
+    var copy = num
+
+    while (num != 0) {
+        var remainder = num % 10
+        var reversed = reversed * 10 + remainder
+        var num = num / 10
+    }
+    return copy == reversed
+}
+
+print(isPalindrome(1001))

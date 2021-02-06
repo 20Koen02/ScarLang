@@ -47,6 +47,12 @@ public class FloatType extends Type {
         } else throw illegalOperation(other);
     }
 
+    public FloatType moduloBy(Type other) throws RunTimeError {
+        if (other instanceof FloatType) {
+            return (FloatType) new FloatType(value % ((FloatType) other).value).setContext(context).setPos(posStart, posEnd);
+        } else throw illegalOperation(other);
+    }
+
     public IntegerType getComparisonEe(Type other) throws RunTimeError {
         if (other instanceof FloatType) {
             return (IntegerType) new IntegerType(value.equals(((FloatType) other).value) ? 1 : 0).setContext(context).setPos(posStart, posEnd);

@@ -47,6 +47,10 @@ public class Type {
         throw illegalOperation(other);
     }
 
+    public Type moduloBy(Type other) throws RunTimeError {
+        throw illegalOperation(other);
+    }
+
     public Type getComparisonEe(Type other) throws RunTimeError {
         throw illegalOperation(other);
     }

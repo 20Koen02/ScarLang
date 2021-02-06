@@ -17,6 +17,7 @@ public class TokenTypes {
     public static final String TT_MUL = "MUL";
     public static final String TT_DIV = "DIV";
     public static final String TT_POW = "POW";
+    public static final String TT_MOD = "MOD";
     public static final String TT_EQ = "EQ";
     public static final String TT_LPAR = "LPAR";
     public static final String TT_RPAR = "RPAR";
