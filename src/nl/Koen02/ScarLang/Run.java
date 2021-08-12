@@ -12,7 +12,7 @@ public class Run {
     public static Type run(String fn, String code) throws Exception {
         // Generate Tokens
         Lexer lexer = new Lexer(fn, code);
-        ArrayList<Token> tokens = lexer.makeTokens();
+        ArrayList<Token> tokens = lexer.scanTokens();
 
         // Generate Abstract Syntax Tree
         Parser parser = new Parser(tokens);

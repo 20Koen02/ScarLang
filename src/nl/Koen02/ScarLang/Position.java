@@ -12,23 +12,21 @@ public class Position {
         this.ftxt = ftxt;
     }
 
-    public Position advance() {
+    public void advance() {
         idx++;
         col++;
-        return this;
     }
 
-    public Position advance(String curChar) {
+    public void advance(String curChar) {
         idx++;
         col++;
         if (curChar == null) {
-            return this;
+            return;
         }
         if (curChar.equals("\n")) {
             ln++;
             col = 0;
         }
-        return this;
     }
 
     public Position getCopy() {
