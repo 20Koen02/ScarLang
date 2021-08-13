@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>console</headerType>
+  <jar>C:\Users\Koen\Documents\Projects\ScarLang\out\artifacts\ScarLang_jar\ScarLang.jar</jar>
+  <outfile>C:\Users\Koen\Documents\Projects\ScarLang\out\artifacts\ScarLang_jar\ScarLang.exe</outfile>
+  <errTitle>An error occured trying to run ScarLang</errTitle>
+  <cmdLine></cmdLine>
+  <chdir></chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl>https://github.com/20Koen02/ScarLang/issues</supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>C:\Users\Koen\Documents\Projects\ScarLang\src\main\resources\icon.ico</icon>
+  <classPath>
+    <mainClass>nl.Koen02.ScarLang.Main</mainClass>
+  </classPath>
+  <jre>
+    <path>jre</path>
+    <bundledJre64Bit>true</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion></minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJdk</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+  </jre>
+</launch4jConfig>

@@ -36,6 +36,9 @@ public final class RunFunction extends BaseFunction {
 
         String fileName = ((StringType) file).value;
 
+        if (!fileName.endsWith(".scar"))
+            throw new RunTimeError(posStart, posEnd, String.format("Failed to load script, file does not contain .scar extension: '%s'", fileName), context);
+
         String script;
         try {
             script = new Scanner(new File(fileName)).useDelimiter("\\Z").next();
