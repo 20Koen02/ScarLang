@@ -20,13 +20,10 @@ public class Run {
         // Global Symbol Table
         SymbolTable globalSymbolTable = new SymbolTable(null);
         globalSymbolTable.addDefaultSymbols();
-
-        // Run Program
-        Interpreter interpreter = new Interpreter();
         if (context.symbolTable == null) context.symbolTable = globalSymbolTable;
 
-        // Log Output
-        RunTimeResult res = interpreter.visit(ast.node, context);
+        // Start interpreter by visiting first node
+        RunTimeResult res = ast.node.visit(context);
         if (res.error != null) throw res.error;
         return res.value;
     }

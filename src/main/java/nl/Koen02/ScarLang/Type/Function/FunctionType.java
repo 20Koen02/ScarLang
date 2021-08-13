@@ -1,7 +1,6 @@
 package nl.Koen02.ScarLang.Type.Function;
 
 import nl.Koen02.ScarLang.Context;
-import nl.Koen02.ScarLang.Interpreter;
 import nl.Koen02.ScarLang.Node.Node;
 import nl.Koen02.ScarLang.RunTimeResult;
 import nl.Koen02.ScarLang.Type.IntegerType;
@@ -24,12 +23,11 @@ public class FunctionType extends BaseFunction {
     public RunTimeResult execute(ArrayList<Type> args) throws Exception {
         RunTimeResult res = new RunTimeResult();
 
-        Interpreter interpreter = new Interpreter();
         Context execContext = genNewContext();
 
         checkAndPopulate(argNames, args, execContext);
 
-        Type value = res.register(interpreter.visit(bodyNode, execContext));
+        Type value = res.register(bodyNode.visit(execContext));
         if (res.shouldReturn() && res.funcReturnValue == null) return res;
 
         if (!shouldAutoReturn) value = null;

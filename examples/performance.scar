@@ -1,0 +1,15 @@
+var innerloop = 0;
+var sum = 0;
+var array_length = 10000000;
+var array = []
+
+for (element = 0 to array_length step 1) {
+    array + element
+}
+
+for (innerloop = 0 to array_length step 1) {
+    var array_selection = array / (innerloop % array_length)
+    var sum = sum + array_selection
+}
+
+print(sum);
