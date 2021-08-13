@@ -1,7 +1,5 @@
 package nl.Koen02.ScarLang.Node;
 
-import nl.Koen02.ScarLang.Node.Node;
-
 import java.util.ArrayList;
 
 public class IfNode extends Node {

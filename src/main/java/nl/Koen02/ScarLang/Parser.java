@@ -1,6 +1,5 @@
 package nl.Koen02.ScarLang;
 
-import nl.Koen02.ScarLang.Node.IfNode;
 import nl.Koen02.ScarLang.Error.InvalidSyntaxError;
 import nl.Koen02.ScarLang.Node.*;
 
@@ -503,11 +502,13 @@ public class Parser {
 
         Token varNameTok;
         if (curTok.type.equals(TT_IDENTIFIER)) {
+            // Normal function with identifier
             varNameTok = curTok;
             res = advance(res);
             if (!curTok.type.equals(TT_LPAR))
                 return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected '('"));
         } else {
+            // Anonymous function
             varNameTok = null;
             if (!curTok.type.equals(TT_LPAR))
                 return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier or '('"));
@@ -516,10 +517,12 @@ public class Parser {
         res = advance(res);
         ArrayList<Token> argNameToks = new ArrayList<>();
         if (curTok.type.equals(TT_IDENTIFIER)) {
+            // Function has arguments
             argNameToks.add(curTok);
             res = advance(res);
 
             while (curTok.type.equals(TT_COMMA)) {
+                // Function has multiple arguments
                 res = advance(res);
                 if (!curTok.type.equals(TT_IDENTIFIER))
                     return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier"));
@@ -529,6 +532,7 @@ public class Parser {
             if (!curTok.type.equals(TT_RPAR))
                 return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected ',' or ')'"));
         } else {
+            // Function does not have arguments
             if (!curTok.type.equals(TT_RPAR))
                 return res.failure(new InvalidSyntaxError(curTok.posStart, curTok.posEnd, "Expected identifier or ')'"));
         }
@@ -537,11 +541,13 @@ public class Parser {
         boolean shouldReturnNull = false;
         Node body;
         if (curTok.type.equals(TT_ARROW)) {
+            // Single line function
             res = advance(res);
             body = res.register(expr());
             if (res.error != null) return res;
             shouldReturnNull = true;
         } else if (curTok.type.equals(TT_LCURL)) {
+            // multiline function
             res = advance(res);
             body = res.register(statements());
             if (res.error != null) return res;

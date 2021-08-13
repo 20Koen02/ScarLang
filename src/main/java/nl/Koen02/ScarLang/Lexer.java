@@ -5,7 +5,6 @@ import nl.Koen02.ScarLang.Error.IllegalCharError;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import static nl.Koen02.ScarLang.TokenTypes.*;
 

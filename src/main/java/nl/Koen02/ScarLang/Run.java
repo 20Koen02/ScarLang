@@ -1,9 +1,7 @@
 package nl.Koen02.ScarLang;
 
-import nl.Koen02.ScarLang.Error.Error;
 import nl.Koen02.ScarLang.Type.Type;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 public class Run {
